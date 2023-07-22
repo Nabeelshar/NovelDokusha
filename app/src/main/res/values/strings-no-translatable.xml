@@ -4,18 +4,22 @@
     <string translatable="false" name="source_name_at">AT</string>
     <string translatable="false" name="source_name_bestlightnovel">BestLightNovel</string>
     <string translatable="false" name="source_name_box_novel">Box Novel</string>
+    <string translatable="false" name="source_name_lt_novel">LTNovel</string>
     <string translatable="false" name="source_name_korean_novels_mtl">Korean Novels MTL</string>
     <string translatable="false" name="source_name_light_novel_translations">Light Novel Translations</string>
     <string translatable="false" name="source_name_light_novel_world">Light Novel World</string>
     <string translatable="false" name="source_name_mtlnovel">MTLNovel</string>
     <string translatable="false" name="source_name_novelhall">NovelHall</string>
+    <string translatable="false" name="source_name_novelcool">NovelCool</string>
     <string translatable="false" name="source_name_novel_updates">Novel Updates</string>
     <string translatable="false" name="source_name_read_light_novel">Read Light Novel</string>
     <string translatable="false" name="source_name_read_novel_full">Read Novel Full</string>
+    <string translatable="false" name="source_name_novel_bin">Novel Bin</string>
     <string translatable="false" name="source_name_reddit">Reddit</string>
     <string translatable="false" name="source_name_saikai">Saikai</string>
     <string translatable="false" name="source_name_sousetsuka">Sousetsuka</string>
     <string translatable="false" name="source_name_wuxia">Wuxia</string>
+    <string translatable="false" name="source_name_readwn">Readwn</string>
     <string translatable="false" name="source_name_wuxia_world">Wuxia World</string>
     <string translatable="false" name="database_name_baka_updates">Baka-Updates</string>
     <string translatable="false" name="database_name_novel_updates">Novel Updates</string>

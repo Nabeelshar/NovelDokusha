@@ -9,11 +9,14 @@ import my.noveldokusha.scraper.databases.NovelUpdates
 import my.noveldokusha.scraper.sources.AT
 import my.noveldokusha.scraper.sources.BestLightNovel
 import my.noveldokusha.scraper.sources.BoxNovel
+import my.noveldokusha.scraper.sources.Itnovel
 import my.noveldokusha.scraper.sources.KoreanNovelsMTL
 import my.noveldokusha.scraper.sources.LightNovelWorld
 import my.noveldokusha.scraper.sources.LightNovelsTranslations
 import my.noveldokusha.scraper.sources.LocalSource
 import my.noveldokusha.scraper.sources.MTLNovel
+import my.noveldokusha.scraper.sources.NovelBin
+import my.noveldokusha.scraper.sources.NovelCool
 import my.noveldokusha.scraper.sources.NovelHall
 import my.noveldokusha.scraper.sources.ReadLightNovel
 import my.noveldokusha.scraper.sources.ReadNovelFull
@@ -57,6 +60,9 @@ class Scraper @Inject constructor(
         MTLNovel(networkClient),
         WuxiaWorld(networkClient),
         KoreanNovelsMTL(networkClient),
+        Itnovel(networkClient),
+        NovelBin(networkClient),
+        NovelCool(networkClient),
     )
 
     val sourcesCatalogsList = sourcesList.filterIsInstance<SourceInterface.Catalog>()
