@@ -23,8 +23,8 @@ class TranslationManagerComposite(
     override val available: Boolean
         get() = mlkitManager.available || geminiManager?.available == true
     
-    val isUsingGemini: Boolean
-        get() = false // Disabled temporarily: appPreferences.TRANSLATION_PREFER_ONLINE.value && geminiManager != null
+    override val isUsingOnlineTranslation: Boolean
+        get() = appPreferences.TRANSLATION_PREFER_ONLINE.value && geminiManager != null
 
     override val models = mutableStateListOf<TranslationModelState>()
 
@@ -65,7 +65,7 @@ class TranslationManagerComposite(
 
         return when {
             // Prefer online if configured and available - read preference dynamically
-            false && geminiTranslator != null -> { // Disabled temporarily: appPreferences.TRANSLATION_PREFER_ONLINE.value
+            appPreferences.TRANSLATION_PREFER_ONLINE.value && geminiTranslator != null -> {
                 TranslatorState(
                     source = source,
                     target = target,

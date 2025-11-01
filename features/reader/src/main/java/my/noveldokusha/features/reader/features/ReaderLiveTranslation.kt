@@ -14,7 +14,6 @@ import my.noveldokusha.core.appPreferences.AppPreferences
 import my.noveldokusha.text_translator.domain.TranslationManager
 import my.noveldokusha.text_translator.domain.TranslationModelState
 import my.noveldokusha.text_translator.domain.TranslatorState
-import my.noveldokusha.text_translator.TranslationManagerComposite
 
 internal data class LiveTranslationSettingData(
     val isAvailable: Boolean,
@@ -124,6 +123,6 @@ internal class ReaderLiveTranslation(
     }
 
     fun isUsingGemini(): Boolean {
-        return (translationManager as? TranslationManagerComposite)?.isUsingGemini == true
+        return translationManager.isUsingOnlineTranslation
     }
 }

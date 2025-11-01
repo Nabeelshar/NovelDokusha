@@ -24,6 +24,8 @@ data class TranslatorState(
 interface TranslationManager {
 
     val available: Boolean
+    
+    val isUsingOnlineTranslation: Boolean get() = false
 
     val models: SnapshotStateList<TranslationModelState>
 
