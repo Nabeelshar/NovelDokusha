@@ -1,0 +1,23 @@
+.novel-content-reader {
+  font-family: 'Arbutus+Slab', serif;
+  font-weight: 300;
+  font-size: 17px;
+  font-weight: normal;
+
+  h1 {
+    margin: 0 0 25px;
+    font-size: 32px;
+    line-height: 36px;
+  }
+
+  p {
+    margin: 0 0 14px;
+    line-height: 23px;
+  }
+
+  p + br,
+  br + br,
+  p > br {
+    display: none;
+  }
+}

@@ -27,6 +27,7 @@ import my.noveldokusha.reader.databinding.ActivityReaderListItemPaddingBinding
 import my.noveldokusha.reader.databinding.ActivityReaderListItemProgressBarBinding
 import my.noveldokusha.reader.databinding.ActivityReaderListItemSpecialTitleBinding
 import my.noveldokusha.reader.databinding.ActivityReaderListItemTitleBinding
+import my.noveldokusha.reader.databinding.ActivityReaderListItemTranslateAttributionBinding
 import my.noveldokusha.reader.databinding.ActivityReaderListItemTranslatingBinding
 import my.noveldokusha.text_to_speech.Utterance
 
@@ -88,6 +89,7 @@ internal class ReaderItemAdapter(
         is ReaderItem.Title -> 8
         is ReaderItem.Translating -> 9
         is ReaderItem.GoogleTranslateAttribution -> 10
+        is ReaderItem.TranslateAttribution -> 11
     }
 
     private fun viewTranslateAttribution(
@@ -102,6 +104,29 @@ internal class ReaderItemAdapter(
             ).also { it.root.tag = it }
             else -> ActivityReaderListItemGoogleTranslateAttributionBinding.bind(convertView)
         }
+        return bind.root
+    }
+
+    private fun viewTranslateAttributionNew(
+        item: ReaderItem.TranslateAttribution,
+        convertView: View?,
+        parent: ViewGroup
+    ): View {
+        val bind = when (convertView) {
+            null -> ActivityReaderListItemTranslateAttributionBinding.inflate(
+                parent.inflater,
+                parent,
+                false
+            ).also { it.root.tag = it }
+            else -> ActivityReaderListItemTranslateAttributionBinding.bind(convertView)
+        }
+        
+        // Set text based on provider
+        bind.attributionText.text = when (item.provider) {
+            "gemini" -> "Powered by Gemini"
+            else -> "Powered by Google Translate"
+        }
+        
         return bind.root
     }
 
@@ -324,6 +349,11 @@ internal class ReaderItemAdapter(
     override fun getView(position: Int, convertView: View?, parent: ViewGroup): View =
         when (val item = getItem(position)) {
             is ReaderItem.GoogleTranslateAttribution -> viewTranslateAttribution(
+                convertView,
+                parent
+            )
+            is ReaderItem.TranslateAttribution -> viewTranslateAttributionNew(
+                item,
                 convertView,
                 parent
             )

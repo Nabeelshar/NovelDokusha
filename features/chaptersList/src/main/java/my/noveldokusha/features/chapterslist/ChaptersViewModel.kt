@@ -230,9 +230,20 @@ internal class ChaptersViewModel @Inject constructor(
 
     fun downloadSelected() {
         if (state.isLocalSource.value) return
-        val list = state.selectedChaptersUrl.toList()
+        
+        // Get selected chapter URLs
+        val selectedUrls = state.selectedChaptersUrl.keys.toSet()
+        
+        // Filter and sort chapters by position to ensure sequential download
+        val sortedChapters = state.chapters
+            .filter { selectedUrls.contains(it.chapter.url) }
+            .sortedBy { it.chapter.position }
+        
+        // Download chapters sequentially in order
         appScope.launch(Dispatchers.Default) {
-            list.forEach { appRepository.chapterBody.fetchBody(it.first) }
+            sortedChapters.forEach { chapter ->
+                appRepository.chapterBody.fetchBody(chapter.chapter.url)
+            }
         }
     }
 

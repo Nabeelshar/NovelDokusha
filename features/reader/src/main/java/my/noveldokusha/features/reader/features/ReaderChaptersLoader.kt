@@ -29,6 +29,7 @@ internal class ReaderChaptersLoader(
     private val translatorIsActive: () -> Boolean,
     private val translatorSourceLanguageOrNull: () -> String?,
     private val translatorTargetLanguageOrNull: () -> String?,
+    private val translatorProvider: () -> String, // "gemini" or "google"
     private val bookUrl: String,
     val orderedChapters: List<Chapter>,
     @Volatile var readerState: ReaderState,
@@ -451,7 +452,10 @@ internal class ReaderChaptersLoader(
                 chapterItemPosition += itemsOriginal.size
 
                 val itemTranslationAttribution = if (translatorIsActive()) {
-                    ReaderItem.GoogleTranslateAttribution(chapterIndex = chapterIndex)
+                    ReaderItem.TranslateAttribution(
+                        chapterIndex = chapterIndex,
+                        provider = translatorProvider()
+                    )
                 } else null
 
                 val itemTranslating = if (translatorIsActive()) {

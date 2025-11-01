@@ -155,6 +155,16 @@ class AppPreferences @Inject constructor(
             override var value by SharedPreference_Int(name, preferences, 24)
         }
 
+    val TRANSLATION_GEMINI_API_KEY =
+        object : Preference<String>("TRANSLATION_GEMINI_API_KEY") {
+            override var value by SharedPreference_String(name, preferences, "")
+        }
+
+    val TRANSLATION_PREFER_ONLINE =
+        object : Preference<Boolean>("TRANSLATION_PREFER_ONLINE") {
+            override var value by SharedPreference_Boolean(name, preferences, false)
+        }
+
 
     @Deprecated("Removed", level = DeprecationLevel.HIDDEN)
     val LOCAL_SOURCES_URI_DIRECTORIES =

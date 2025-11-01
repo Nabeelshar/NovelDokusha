@@ -167,7 +167,10 @@
     <string name="language_spanish">Spanish</string>
     <string name="language_french">French</string>
     <string name="language_indonesian">Indonesian</string>
+    <string name="language_chinese">Chinese</string>
     <string name="source_name_local">Local</string>
+    <string name="source_name_69shuba">69Shuba</string>
+    <string name="source_name_twkan">Twkan</string>
     <string name="updating_library">Updating library (%1$d/%2$d)</string>
     <string name="notification_channel_name_reader_narrator">Reader narrator</string>
     <string name="notification_channel_name_library_update">Library update</string>

@@ -5,20 +5,14 @@ import my.noveldokusha.scraper.databases.BakaUpdates
 import my.noveldokusha.scraper.databases.NovelUpdates
 import my.noveldokusha.scraper.sources.AT
 import my.noveldokusha.scraper.sources.BacaLightnovel
-import my.noveldokusha.scraper.sources.BestLightNovel
 import my.noveldokusha.scraper.sources.BoxNovel
 import my.noveldokusha.scraper.sources.IndoWebnovel
-import my.noveldokusha.scraper.sources.KoreanNovelsMTL
-import my.noveldokusha.scraper.sources.LightNovelWorld
-import my.noveldokusha.scraper.sources.LightNovelsTranslations
 import my.noveldokusha.scraper.sources.LocalSource
-import my.noveldokusha.scraper.sources.MTLNovel
 import my.noveldokusha.scraper.sources.MeioNovel
 import my.noveldokusha.scraper.sources.MoreNovel
 import my.noveldokusha.scraper.sources.NovelBin
 import my.noveldokusha.scraper.sources.NovelHall
 import my.noveldokusha.scraper.sources.Novelku
-import my.noveldokusha.scraper.sources.ReadLightNovel
 import my.noveldokusha.scraper.sources.ReadNovelFull
 import my.noveldokusha.scraper.sources.Reddit
 import my.noveldokusha.scraper.sources.RoyalRoad
@@ -26,9 +20,22 @@ import my.noveldokusha.scraper.sources.Saikai
 import my.noveldokusha.scraper.sources.SakuraNovel
 import my.noveldokusha.scraper.sources.Sousetsuka
 import my.noveldokusha.scraper.sources.WbNovel
-import my.noveldokusha.scraper.sources.Wuxia
 import my.noveldokusha.scraper.sources.WuxiaWorld
-import my.noveldokusha.scraper.sources._1stKissNovel
+import my.noveldokusha.scraper.sources.ScribbleHub
+import my.noveldokusha.scraper.sources.FreeWebNovel
+import my.noveldokusha.scraper.sources.NovelFull
+import my.noveldokusha.scraper.sources.AllNovel
+import my.noveldokusha.scraper.sources.NovelBinCom
+import my.noveldokusha.scraper.sources.ReadMTL
+import my.noveldokusha.scraper.sources.NewNovel
+import my.noveldokusha.scraper.sources.SonicMTL
+import my.noveldokusha.scraper.sources.NoBadNovel
+import my.noveldokusha.scraper.sources.FanMTL
+import my.noveldokusha.scraper.sources.LNMTL
+import my.noveldokusha.scraper.sources.WtrLab
+// Temporarily disabled - compilation issues
+// import my.noveldokusha.scraper.sources.Shuba69
+// import my.noveldokusha.scraper.sources.Twkan
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -44,25 +51,20 @@ class Scraper @Inject constructor(
 
     val sourcesList = setOf(
         localSource,
-        LightNovelsTranslations(networkClient),
-        ReadLightNovel(networkClient),
         ReadNovelFull(networkClient),
         RoyalRoad(networkClient),
         my.noveldokusha.scraper.sources.NovelUpdates(networkClient),
         Reddit(),
         AT(),
-        Wuxia(networkClient),
-        BestLightNovel(networkClient),
-        _1stKissNovel(networkClient),
         Sousetsuka(),
         Saikai(networkClient),
         BoxNovel(networkClient),
-        LightNovelWorld(networkClient),
         NovelHall(networkClient),
-        MTLNovel(networkClient),
         WuxiaWorld(networkClient),
-        KoreanNovelsMTL(networkClient),
         IndoWebnovel(networkClient),
+        // Temporarily disabled - compilation issues
+        // Shuba69(networkClient),
+        // Twkan(networkClient),
         BacaLightnovel(networkClient),
         SakuraNovel(networkClient),
         MeioNovel(networkClient),
@@ -70,6 +72,18 @@ class Scraper @Inject constructor(
         Novelku(networkClient),
         WbNovel(networkClient),
         NovelBin(networkClient),
+        ScribbleHub(networkClient),
+        FreeWebNovel(networkClient),
+        NovelFull(networkClient),
+        AllNovel(networkClient),
+        NovelBinCom(networkClient),
+        ReadMTL(networkClient),
+        NewNovel(networkClient),
+        SonicMTL(networkClient),
+        NoBadNovel(networkClient),
+        FanMTL(networkClient),
+        LNMTL(networkClient),
+        WtrLab(networkClient),
     )
 
     val sourcesCatalogsList = sourcesList.filterIsInstance<SourceInterface.Catalog>()

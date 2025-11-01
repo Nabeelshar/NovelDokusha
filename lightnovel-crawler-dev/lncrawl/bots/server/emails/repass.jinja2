@@ -1,0 +1,36 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Password Reset</title>
+  <link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600&display=swap" rel="stylesheet" />
+</head>
+
+<body style="background-color:#f7fafc; margin:0; padding:32px; font-family:'Inter',Arial,sans-serif;">
+  <table width="100%" border="0" cellspacing="0" cellpadding="0"
+    style="max-width:480px; margin:auto; background:#ffffff; border-radius:12px; box-shadow:0 4px 12px rgba(0,0,0,0.05); overflow:hidden;">
+    <tr>
+      <td style="padding:32px; text-align:center;">
+        <h2 style="margin:0 0 16px 0; font-weight:600; color:#222;">Reset Your Password</h2>
+        <p style="margin:0 0 24px 0; font-size:15px; color:#555;">
+          We received a request to reset your password. Click the button below to proceed.
+        </p>
+        <a href="{{ link }}" target="_blank"
+          style="display:inline-block; background-color:#2563eb; color:#fff; text-decoration:none; font-weight:600; padding:12px 24px; border-radius:8px; font-size:15px;">
+          Reset Password
+        </a>
+        <p style="margin:24px 0 8px; font-size:13px; color:#777;">
+          This link will expire in <strong>5 minutes</strong>.
+        </p>
+        <p style="font-size:12px; color:#aaa;">
+          If the button doesn’t work, copy and paste this link into your browser:<br />
+          <a href="{{ link }}" target="_blank" style="color:#2563eb; word-break:break-all;">{{ link }}</a>
+        </p>
+      </td>
+    </tr>
+  </table>
+</body>
+
+</html>

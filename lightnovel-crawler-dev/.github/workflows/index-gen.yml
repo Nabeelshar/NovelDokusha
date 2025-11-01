@@ -1,0 +1,57 @@
+name: Generate source index
+
+on:
+  workflow_dispatch:
+  push:
+    branches:
+      - dev
+    paths:
+      - "sources/**"
+      - "!sources/_index.json"
+      - "scripts/index_gen.py"
+      - "scripts/check_sources.py"
+      - "lncrawl/VERSION"
+      - ".github/workflows/index-gen.yml"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: true
+
+jobs:
+  index_gen:
+    if: github.repository == 'dipu-bd/lightnovel-crawler'
+    runs-on: ubuntu-latest
+    permissions:
+      contents: write
+
+    steps:
+      - name: 📥 Checkout Repository
+        uses: actions/checkout@v4
+        with:
+          fetch-depth: 0 # full history, needed for git auto commit
+
+      - name: 🐍 Set Up Python 3.11
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.11"
+          cache: "pip"
+
+      - name: 📦 Install Python Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt
+
+      - name: ⚙️ Generate Index
+        run: |
+          python ./scripts/index_gen.py
+
+      - name: ✅ Commit and Push Index
+        uses: stefanzweifel/git-auto-commit-action@v6
+        with:
+          commit_message: Generate source index
+
+      - name: 📤 Upload artifact
+        uses: actions/upload-artifact@v4
+        with:
+          path: sources/_index.zip
+          name: index.zip

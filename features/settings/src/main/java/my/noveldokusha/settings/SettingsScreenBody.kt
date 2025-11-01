@@ -30,6 +30,7 @@ import my.noveldokusha.settings.sections.AppUpdates
 import my.noveldokusha.settings.sections.LibraryAutoUpdate
 import my.noveldokusha.settings.sections.SettingsBackup
 import my.noveldokusha.settings.sections.SettingsData
+import my.noveldokusha.settings.sections.SettingsGeminiTranslation
 import my.noveldokusha.settings.sections.SettingsTheme
 import my.noveldokusha.settings.sections.SettingsTranslationModels
 
@@ -46,6 +47,8 @@ internal fun SettingsScreenBody(
     onDownloadTranslationModel: (lang: String) -> Unit,
     onRemoveTranslationModel: (lang: String) -> Unit,
     onCheckForUpdatesManual: () -> Unit,
+    onGeminiApiKeyChange: (String) -> Unit,
+    onPreferOnlineChange: (Boolean) -> Unit,
 ) {
     Column(
         modifier = modifier.verticalScroll(rememberScrollState()),
@@ -74,6 +77,13 @@ internal fun SettingsScreenBody(
                 translationModelsStates = state.translationModelsStates,
                 onDownloadTranslationModel = onDownloadTranslationModel,
                 onRemoveTranslationModel = onRemoveTranslationModel
+            )
+            HorizontalDivider()
+            SettingsGeminiTranslation(
+                geminiApiKey = state.geminiApiKey.value,
+                preferOnlineTranslation = state.preferOnlineTranslation.value,
+                onGeminiApiKeyChange = onGeminiApiKeyChange,
+                onPreferOnlineChange = onPreferOnlineChange
             )
         }
         HorizontalDivider()
@@ -127,7 +137,9 @@ private fun Preview() {
                     libraryAutoUpdate = SettingsScreenState.LibraryAutoUpdate(
                         autoUpdateEnabled = remember { mutableStateOf(true) },
                         autoUpdateIntervalHours = remember { mutableIntStateOf(24) },
-                    )
+                    ),
+                    geminiApiKey = remember { derivedStateOf { "" } },
+                    preferOnlineTranslation = remember { derivedStateOf { false } },
                 ),
                 onFollowSystem = { },
                 onThemeSelected = { },
@@ -138,6 +150,8 @@ private fun Preview() {
                 onDownloadTranslationModel = { },
                 onRemoveTranslationModel = { },
                 onCheckForUpdatesManual = { },
+                onGeminiApiKeyChange = { },
+                onPreferOnlineChange = { },
             )
         }
     }

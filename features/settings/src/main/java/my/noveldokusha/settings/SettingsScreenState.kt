@@ -16,6 +16,8 @@ data class SettingsScreenState(
     val translationModelsStates: SnapshotStateList<TranslationModelState>,
     val updateAppSetting: UpdateApp,
     val libraryAutoUpdate: LibraryAutoUpdate,
+    val geminiApiKey: State<String>,
+    val preferOnlineTranslation: State<Boolean>,
 ) {
     data class UpdateApp(
         val currentAppVersion: String,

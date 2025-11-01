@@ -1,0 +1,190 @@
+name: Build and Publish
+
+on:
+  push:
+    tags:
+      - "v*"
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.ref }}
+  cancel-in-progress: false
+
+jobs:
+  validate:
+    if: github.repository == 'dipu-bd/lightnovel-crawler'
+    name: Validate Build
+    runs-on: ubuntu-latest
+    strategy:
+      fail-fast: true
+      matrix:
+        python-version: ["3.8", "3.9", "3.10", "3.11", "3.12", "3.13"]
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔐 Validate VERSION tag
+        run: |
+          [ "${GITHUB_REF##*/}" == "v$(head -n 1 lncrawl/VERSION)" ] || exit 100
+
+      - name: 🐍 Set up Python ${{ matrix.python-version }}
+        uses: actions/setup-python@v5
+        with:
+          python-version: ${{ matrix.python-version }}
+          cache: pip
+
+      - name: 📦 Install Dependencies
+        run: |
+          python -m pip install --upgrade pip
+          pip install -r requirements.txt flake8 build
+
+      - name: 🧹 Lint Code
+        run: flake8 -v --count --show-source --statistics
+
+      - name: 🏗️ Build Wheel
+        run: python -m build --wheel --no-isolation
+
+      - name: 🧪 Test Wheel Installation
+        run: |
+          pip install dist/lightnovel_crawler*.whl
+          lncrawl --list-sources
+          lncrawl -s 'https://novelfull.com/the-kings-avatar-for-the-glory.html' --first 2 -f --format epub --suppress -lll
+
+  build-windows:
+    if: github.repository == 'dipu-bd/lightnovel-crawler'
+    needs: validate
+    name: Build Windows Executable
+    runs-on: windows-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🧰 Install OpenSSL
+        run: choco install -y --no-progress openssl
+
+      - name: 🐍 Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: 🏗️ Build Windows Executable
+        env:
+          PYTHONIOENCODING: utf-8
+        run: .\scripts\build.bat
+
+      - name: 🧪 Test Executable
+        env:
+          PYTHONIOENCODING: utf-8
+        run: .\dist\lncrawl.exe --list-sources
+
+      - name: 🚀 Release Artifact
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "dist/lncrawl.exe"
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  build-mac:
+    if: github.repository == 'dipu-bd/lightnovel-crawler'
+    needs: validate
+    name: Build MacOS Executable
+    runs-on: macos-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+
+      - name: 🏗️ Build MacOS Executable
+        run: |
+          sh ./scripts/build.sh
+          mv ./dist/lncrawl ./dist/lncrawl-mac
+
+      - name: 🧪 Test Executable
+        run: ./dist/lncrawl-mac --list-sources
+
+      - name: 🚀 Release Artifact
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "dist/lncrawl-mac"
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+  build-linux:
+    if: github.repository == 'dipu-bd/lightnovel-crawler'
+    needs: validate
+    name: Build & Publish Linux
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🐍 Set up Python 3.10
+        uses: actions/setup-python@v5
+        with:
+          python-version: "3.10"
+          cache: pip
+
+      - name: 🏗️ Build Linux Executable
+        run: |
+          sh ./scripts/build.sh
+          mv ./dist/lncrawl ./dist/lncrawl-linux
+
+      - name: 🧪 Test Executable
+        run: ./dist/lncrawl-linux --list-sources
+
+      - name: 🚀 Release Artifacts
+        uses: ncipollo/release-action@v1
+        with:
+          artifacts: "dist/lncrawl-linux,dist/*.whl"
+          allowUpdates: true
+          artifactErrorsFailBuild: true
+          token: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🔗 Update Download Links
+        env:
+          SHLINK_API_KEY: ${{ secrets.SHLINK_API_KEY }}
+        run: sh ./scripts/bitanon.sh
+
+      - name: 📦 Publish to PyPI
+        env:
+          TWINE_USERNAME: __token__
+          TWINE_PASSWORD: ${{ secrets.PYPI_API_TOKEN }}
+          TWINE_NON_INTERACTIVE: true
+        run: sh ./scripts/publish.sh
+
+  build-docker:
+    name: Build & Publish Docker
+    runs-on: ubuntu-latest
+
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: 🔐 Login to GitHub Container Registry
+        uses: docker/login-action@v3
+        with:
+          registry: ghcr.io
+          username: ${{ github.actor }}
+          password: ${{ secrets.GITHUB_TOKEN }}
+
+      - name: 🐳 Set up Docker Buildx
+        uses: docker/setup-buildx-action@v3
+
+      - name: 🏗️ Build and Push Image
+        uses: docker/build-push-action@v5
+        with:
+          context: .
+          platforms: linux/amd64
+          push: true
+          tags: |
+            ghcr.io/${{ github.repository }}:latest
+            ghcr.io/${{ github.repository }}:${GITHUB_REF##*/}
+          labels: |
+            org.opencontainers.image.source=${{ github.event.repository.html_url }}
+            org.opencontainers.image.revision=${{ github.sha }}
+          cache-from: type=gha
+          cache-to: type=gha,mode=max

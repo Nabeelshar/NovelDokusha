@@ -1,0 +1,8 @@
+<?xml version="1.0" encoding="utf-8"?>
+<network-security-config>
+    <!-- Allow cleartext traffic for scraper sources that don't support HTTPS -->
+    <domain-config cleartextTrafficPermitted="true">
+        <domain includeSubdomains="true">wuxia.blog</domain>
+        <domain includeSubdomains="true">1stkissnovel.org</domain>
+    </domain-config>
+</network-security-config>

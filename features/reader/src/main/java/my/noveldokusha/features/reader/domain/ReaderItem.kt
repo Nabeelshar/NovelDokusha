@@ -63,6 +63,10 @@ internal sealed interface ReaderItem {
     ) : ReaderItem
 
     data class GoogleTranslateAttribution(override val chapterIndex: Int) : ReaderItem
+    data class TranslateAttribution(
+        override val chapterIndex: Int,
+        val provider: String // "gemini" or "google"
+    ) : ReaderItem
     data class Progressbar(override val chapterIndex: Int) : ReaderItem
     data class Divider(override val chapterIndex: Int) : ReaderItem
     data class BookEnd(override val chapterIndex: Int) : ReaderItem
