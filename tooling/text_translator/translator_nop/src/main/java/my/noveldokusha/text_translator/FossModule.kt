@@ -19,8 +19,7 @@ object FossModule {
         appCoroutineScope: AppCoroutineScope,
         appPreferences: AppPreferences
     ): TranslationManager {
-        // Always provide Gemini manager for FOSS (shows settings even without API key)
-        val apiKey = appPreferences.TRANSLATION_GEMINI_API_KEY.value
-        return TranslationManagerGemini(appCoroutineScope, apiKey)
+        // Always provide Gemini manager for FOSS (reads API key dynamically)
+        return TranslationManagerGemini(appCoroutineScope, appPreferences)
     }
 }

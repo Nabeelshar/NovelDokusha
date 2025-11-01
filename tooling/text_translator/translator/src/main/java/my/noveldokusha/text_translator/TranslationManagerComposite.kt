@@ -25,7 +25,9 @@ class TranslationManagerComposite(
         get() = mlkitManager.available || geminiManager?.available == true
     
     override val isUsingOnlineTranslation: Boolean
-        get() = appPreferences.TRANSLATION_PREFER_ONLINE.value && geminiManager != null
+        get() = appPreferences.TRANSLATION_PREFER_ONLINE.value && 
+                geminiManager != null && 
+                geminiManager.available  // Check if API key is configured
 
     override val models = mutableStateListOf<TranslationModelState>()
 
@@ -63,10 +65,14 @@ class TranslationManagerComposite(
     override fun getTranslator(source: String, target: String): TranslatorState {
         Log.d(TAG, "getTranslator: source=$source, target=$target")
         Log.d(TAG, "  preferOnline=${appPreferences.TRANSLATION_PREFER_ONLINE.value}")
-        Log.d(TAG, "  geminiAvailable=${geminiManager != null}")
+        Log.d(TAG, "  geminiAvailable=${geminiManager?.available == true}")
         
         val mlkitTranslator = mlkitManager.getTranslator(source, target)
-        val geminiTranslator = geminiManager?.getTranslator(source, target)
+        val geminiTranslator = if (geminiManager?.available == true) {
+            geminiManager.getTranslator(source, target)
+        } else {
+            null
+        }
 
         return when {
             // Prefer online if configured and available - read preference dynamically

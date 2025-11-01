@@ -5,6 +5,7 @@ import androidx.compose.runtime.mutableStateListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
 import my.noveldokusha.core.AppCoroutineScope
+import my.noveldokusha.core.appPreferences.AppPreferences
 import my.noveldokusha.text_translator.domain.TranslationManager
 import my.noveldokusha.text_translator.domain.TranslationModelState
 import my.noveldokusha.text_translator.domain.TranslatorState
@@ -24,7 +25,7 @@ import java.util.concurrent.TimeUnit
  */
 class TranslationManagerGemini(
     private val coroutineScope: AppCoroutineScope,
-    private val apiKey: String
+    private val appPreferences: AppPreferences
 ) : TranslationManager {
 
     private val client = OkHttpClient.Builder()
@@ -33,12 +34,17 @@ class TranslationManagerGemini(
         .writeTimeout(30, TimeUnit.SECONDS)
         .build()
 
-    private val apiEndpoint by lazy {
-        "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=$apiKey"
+    // Read API key dynamically from preferences
+    private val apiKey: String
+        get() = appPreferences.TRANSLATION_GEMINI_API_KEY.value
+
+    private fun getApiEndpoint(key: String): String {
+        return "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=$key"
     }
 
     override val available = true  // Always show settings UI, even without API key
-    override val isUsingOnlineTranslation = apiKey.isNotBlank()
+    override val isUsingOnlineTranslation: Boolean
+        get() = apiKey.isNotBlank()
 
     // Gemini supports many languages without needing model downloads
     override val models = mutableStateListOf<TranslationModelState>().apply {
@@ -78,11 +84,14 @@ class TranslationManagerGemini(
         sourceLanguage: String,
         targetLanguage: String
     ): String = withContext(Dispatchers.IO) {
+        // Read API key fresh each time
+        val currentApiKey = apiKey
+        
         Log.d(TAG, "translateWithGemini: starting translation")
         Log.d(TAG, "  source=$sourceLanguage, target=$targetLanguage")
-        Log.d(TAG, "  textLength=${text.length}, apiKeyConfigured=${apiKey.isNotBlank()}")
+        Log.d(TAG, "  textLength=${text.length}, apiKeyConfigured=${currentApiKey.isNotBlank()}")
         
-        if (apiKey.isBlank()) {
+        if (currentApiKey.isBlank()) {
             Log.e(TAG, "translateWithGemini: API key is blank!")
             throw IllegalStateException("Gemini API key not configured")
         }
@@ -116,9 +125,9 @@ class TranslationManagerGemini(
         val requestBody = jsonBody.toString().toRequestBody(mediaType)
 
         val request = Request.Builder()
-            .url(apiEndpoint)
+            .url(getApiEndpoint(currentApiKey))
             .addHeader("Content-Type", "application/json")
-            .addHeader("x-goog-api-key", apiKey)
+            .addHeader("x-goog-api-key", currentApiKey)
             .post(requestBody)
             .build()
 
