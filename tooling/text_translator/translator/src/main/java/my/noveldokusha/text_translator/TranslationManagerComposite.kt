@@ -1,5 +1,6 @@
 package my.noveldokusha.text_translator
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -60,12 +61,17 @@ class TranslationManagerComposite(
     }
 
     override fun getTranslator(source: String, target: String): TranslatorState {
+        Log.d(TAG, "getTranslator: source=$source, target=$target")
+        Log.d(TAG, "  preferOnline=${appPreferences.TRANSLATION_PREFER_ONLINE.value}")
+        Log.d(TAG, "  geminiAvailable=${geminiManager != null}")
+        
         val mlkitTranslator = mlkitManager.getTranslator(source, target)
         val geminiTranslator = geminiManager?.getTranslator(source, target)
 
         return when {
             // Prefer online if configured and available - read preference dynamically
             appPreferences.TRANSLATION_PREFER_ONLINE.value && geminiTranslator != null -> {
+                Log.d(TAG, "getTranslator: using Gemini (online) with MLKit fallback")
                 TranslatorState(
                     source = source,
                     target = target,
@@ -74,26 +80,39 @@ class TranslationManagerComposite(
                         // Retry up to 3 times for Gemini
                         repeat(3) { attempt ->
                             try {
-                                return@TranslatorState geminiTranslator.translate(input)
+                                Log.d(TAG, "Gemini attempt ${attempt + 1}/3")
+                                val result = geminiTranslator.translate(input)
+                                Log.d(TAG, "Gemini translation succeeded")
+                                return@TranslatorState result
                             } catch (e: Exception) {
+                                Log.e(TAG, "Gemini attempt ${attempt + 1} failed: ${e.message}", e)
                                 lastException = e
                                 if (attempt < 2) {
                                     // Wait before retry (exponential backoff)
-                                    kotlinx.coroutines.delay(1000L * (attempt + 1))
+                                    val delay = 1000L * (attempt + 1)
+                                    Log.d(TAG, "Retrying in ${delay}ms")
+                                    kotlinx.coroutines.delay(delay)
                                 }
                             }
                         }
                         // All retries failed, fallback to MLKit
+                        Log.w(TAG, "Gemini failed, falling back to MLKit")
                         try {
-                            mlkitTranslator.translate(input)
+                            val result = mlkitTranslator.translate(input)
+                            Log.d(TAG, "MLKit fallback succeeded")
+                            result
                         } catch (e: Exception) {
+                            Log.e(TAG, "MLKit fallback also failed: ${e.message}", e)
                             throw lastException ?: e
                         }
                     }
                 )
             }
             // Use MLKit if available
-            else -> mlkitTranslator
+            else -> {
+                Log.d(TAG, "getTranslator: using MLKit (offline)")
+                mlkitTranslator
+            }
         }
     }
 
@@ -105,5 +124,9 @@ class TranslationManagerComposite(
     override fun removeModel(language: String) {
         // Only remove for MLKit (offline models)
         mlkitManager.removeModel(language)
+    }
+
+    companion object {
+        private const val TAG = "TranslationComposite"
     }
 }

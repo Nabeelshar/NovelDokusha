@@ -1,5 +1,6 @@
 package my.noveldokusha.features.reader.features
 
+import android.util.Log
 import androidx.compose.runtime.MutableState
 import androidx.compose.runtime.mutableStateOf
 import androidx.compose.runtime.snapshots.SnapshotStateList
@@ -53,11 +54,18 @@ internal class ReaderLiveTranslation(
     val onTranslatorChanged = _onTranslatorChanged.asSharedFlow()
 
     suspend fun init() {
+        Log.d(TAG, "init: starting")
         val source = appPreferences.GLOBAL_TRANSLATION_PREFERRED_SOURCE.value
         val target = appPreferences.GLOBAL_TRANSLATION_PREFERRED_TARGET.value
+        Log.d(TAG, "init: source=$source, target=$target")
+        Log.d(TAG, "init: translationAvailable=${translationManager.available}")
+        
         state.source.value = getValidTranslatorOrNull(source)
         state.target.value = getValidTranslatorOrNull(target)
+        Log.d(TAG, "init: sourceModel=${state.source.value?.language}, targetModel=${state.target.value?.language}")
+        
         updateTranslatorState()
+        Log.d(TAG, "init: complete, translatorState=${translatorState != null}")
     }
 
     private suspend fun getValidTranslatorOrNull(language: String): TranslationModelState? {
@@ -73,13 +81,36 @@ internal class ReaderLiveTranslation(
         val source = state.source.value
         val target = state.target.value
 
+        Log.d(TAG, "updateTranslatorState: enabled=$isEnabled, source=${source?.language}, target=${target?.language}")
+
         val old = translatorState
         val new = when {
-            !isEnabled || source == null || target == null || source.language == target.language -> null
-            else -> translationManager.getTranslator(
-                source = source.language,
-                target = target.language
-            )
+            !isEnabled -> {
+                Log.d(TAG, "updateTranslatorState: translation disabled")
+                null
+            }
+            source == null || target == null -> {
+                Log.d(TAG, "updateTranslatorState: missing source or target model")
+                null
+            }
+            source.language == target.language -> {
+                Log.d(TAG, "updateTranslatorState: source and target are the same")
+                null
+            }
+            else -> {
+                try {
+                    Log.d(TAG, "updateTranslatorState: creating translator")
+                    translationManager.getTranslator(
+                        source = source.language,
+                        target = target.language
+                    ).also {
+                        Log.d(TAG, "updateTranslatorState: translator created successfully")
+                    }
+                } catch (e: Exception) {
+                    Log.e(TAG, "updateTranslatorState: failed to create translator", e)
+                    throw e
+                }
+            }
         }.also { this.translatorState = it }
 
 
@@ -96,33 +127,58 @@ internal class ReaderLiveTranslation(
     }
 
     private fun onEnable(it: Boolean) {
-        state.enable.value = it
-        appPreferences.GLOBAL_TRANSLATION_ENABLED.value = it
-        val update = updateTranslatorState()
-        if (update) scope.launch {
-            _onTranslatorChanged.emit(Unit)
+        Log.d(TAG, "onEnable: $it")
+        try {
+            state.enable.value = it
+            appPreferences.GLOBAL_TRANSLATION_ENABLED.value = it
+            val update = updateTranslatorState()
+            Log.d(TAG, "onEnable: updateRequired=$update")
+            if (update) scope.launch {
+                _onTranslatorChanged.emit(Unit)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "onEnable: error", e)
+            throw e
         }
     }
 
     private fun onSourceChange(it: TranslationModelState?) {
-        state.source.value = it
-        appPreferences.GLOBAL_TRANSLATION_PREFERRED_SOURCE.value = it?.language ?: ""
-        val update = updateTranslatorState()
-        if (update) scope.launch {
-            _onTranslatorChanged.emit(Unit)
+        Log.d(TAG, "onSourceChange: ${it?.language}")
+        try {
+            state.source.value = it
+            appPreferences.GLOBAL_TRANSLATION_PREFERRED_SOURCE.value = it?.language ?: ""
+            val update = updateTranslatorState()
+            Log.d(TAG, "onSourceChange: updateRequired=$update")
+            if (update) scope.launch {
+                _onTranslatorChanged.emit(Unit)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "onSourceChange: error", e)
+            throw e
         }
     }
 
     private fun onTargetChange(it: TranslationModelState?) {
-        state.target.value = it
-        appPreferences.GLOBAL_TRANSLATION_PREFERRED_TARGET.value = it?.language ?: ""
-        val update = updateTranslatorState()
-        if (update) scope.launch {
-            _onTranslatorChanged.emit(Unit)
+        Log.d(TAG, "onTargetChange: ${it?.language}")
+        try {
+            state.target.value = it
+            appPreferences.GLOBAL_TRANSLATION_PREFERRED_TARGET.value = it?.language ?: ""
+            val update = updateTranslatorState()
+            Log.d(TAG, "onTargetChange: updateRequired=$update")
+            if (update) scope.launch {
+                _onTranslatorChanged.emit(Unit)
+            }
+        } catch (e: Exception) {
+            Log.e(TAG, "onTargetChange: error", e)
+            throw e
         }
     }
 
     fun isUsingGemini(): Boolean {
         return translationManager.isUsingOnlineTranslation
+    }
+
+    companion object {
+        private const val TAG = "ReaderLiveTranslation"
     }
 }

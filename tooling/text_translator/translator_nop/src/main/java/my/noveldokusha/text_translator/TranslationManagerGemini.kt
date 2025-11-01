@@ -1,5 +1,6 @@
 package my.noveldokusha.text_translator
 
+import android.util.Log
 import androidx.compose.runtime.mutableStateListOf
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -64,6 +65,7 @@ class TranslationManagerGemini(
     }
 
     override fun getTranslator(source: String, target: String): TranslatorState {
+        Log.d(TAG, "getTranslator: source=$source, target=$target, apiKeyLength=${apiKey.length}")
         return TranslatorState(
             source = source,
             target = target,
@@ -76,7 +78,12 @@ class TranslationManagerGemini(
         sourceLanguage: String,
         targetLanguage: String
     ): String = withContext(Dispatchers.IO) {
+        Log.d(TAG, "translateWithGemini: starting translation")
+        Log.d(TAG, "  source=$sourceLanguage, target=$targetLanguage")
+        Log.d(TAG, "  textLength=${text.length}, apiKeyConfigured=${apiKey.isNotBlank()}")
+        
         if (apiKey.isBlank()) {
+            Log.e(TAG, "translateWithGemini: API key is blank!")
             throw IllegalStateException("Gemini API key not configured")
         }
 
@@ -115,15 +122,20 @@ class TranslationManagerGemini(
             .post(requestBody)
             .build()
 
+        Log.d(TAG, "translateWithGemini: sending API request")
         val response = client.newCall(request).execute()
         
         val code = response.code
+        Log.d(TAG, "translateWithGemini: received response code=$code")
+        
         if (code !in 200..299) {
             val message = response.message
+            Log.e(TAG, "translateWithGemini: API error $code - $message")
             throw Exception("Translation failed: $code - $message")
         }
 
         val responseBody = response.body?.string() ?: ""
+        Log.d(TAG, "translateWithGemini: response body length=${responseBody.length}")
 
         try {
             val jsonResponse = JSONObject(responseBody)
@@ -133,13 +145,17 @@ class TranslationManagerGemini(
                     .getJSONObject("content")
                 val parts = content.getJSONArray("parts")
                 if (parts.length() > 0) {
-                    return@withContext parts.getJSONObject(0)
+                    val translatedText = parts.getJSONObject(0)
                         .getString("text")
                         .trim()
+                    Log.d(TAG, "translateWithGemini: success, result length=${translatedText.length}")
+                    return@withContext translatedText
                 }
             }
+            Log.e(TAG, "translateWithGemini: Invalid response format")
             throw Exception("Invalid response format from Gemini API")
         } catch (e: Exception) {
+            Log.e(TAG, "translateWithGemini: parse error - ${e.message}", e)
             throw Exception("Failed to parse Gemini response: ${e.message}")
         }
     }
@@ -150,5 +166,9 @@ class TranslationManagerGemini(
 
     override fun removeModel(language: String) {
         // No-op for API-based translation - models can't be removed
+    }
+
+    companion object {
+        private const val TAG = "TranslationGemini"
     }
 }
