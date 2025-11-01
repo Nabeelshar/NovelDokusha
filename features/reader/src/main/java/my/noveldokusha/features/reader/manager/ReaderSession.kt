@@ -106,6 +106,7 @@ internal class ReaderSession(
         translatorSourceLanguageOrNull = { readerLiveTranslation.translatorState?.sourceLocale?.displayLanguage },
         translatorTargetLanguageOrNull = { readerLiveTranslation.translatorState?.targetLocale?.displayLanguage },
         translatorProvider = { if (readerLiveTranslation.isUsingGemini()) "gemini" else "google" },
+        translatorBatchTranslateOrNull = readerLiveTranslation.getBatchTranslator(),
         bookUrl = bookUrl,
         orderedChapters = orderedChapters,
         readerState = ReaderState.INITIAL_LOAD,
@@ -270,6 +271,27 @@ internal class ReaderSession(
             chapterUrl = chapterUrl
         ) ?: return
         readingStats.value = stats
+        
+        // Trigger pre-fetch and pre-translation based on reading progress
+        val progress = stats.chapterReadPercentage()
+        val chapterIndex = stats.chapterIndex
+        
+        // Pre-fetch next chapter at 90% (even without translation)
+        if (progress >= 0.90f && !readerChaptersLoader.isLastChapter(chapterIndex)) {
+            val nextChapterIndex = chapterIndex + 1
+            if (!readerChaptersLoader.isChapterIndexLoaded(nextChapterIndex)) {
+                scope.launch {
+                    readerChaptersLoader.tryLoadNext()
+                }
+            }
+        }
+        
+        // Pre-translate next chapter at 80% (only with translation enabled)
+        if (progress >= 0.80f && readerLiveTranslation.translatorState != null) {
+            scope.launch {
+                readerChaptersLoader.preTranslateNextChapter(chapterIndex)
+            }
+        }
     }
 
     fun markChapterStartAsSeen(chapterUrl: String) {

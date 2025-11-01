@@ -177,6 +177,40 @@ internal class ReaderLiveTranslation(
     fun isUsingGemini(): Boolean {
         return translationManager.isUsingOnlineTranslation
     }
+    
+    /**
+     * Get batch translator if available (Gemini only)
+     * Returns null for MLKit which doesn't support batch translation
+     */
+    fun getBatchTranslator(): (suspend (List<String>) -> Map<String, String>)? {
+        if (!translationManager.isUsingOnlineTranslation) return null
+        if (translatorState == null) return null
+        
+        val source = translatorState?.source ?: return null
+        val target = translatorState?.target ?: return null
+        
+        // Try to cast to Gemini manager for batch translation using reflection
+        return try {
+            val geminiClass = Class.forName("my.noveldokusha.text_translator.TranslationManagerGemini")
+            if (!geminiClass.isInstance(translationManager)) return null
+            
+            val translateBatchMethod = geminiClass.getMethod(
+                "translateBatch",
+                List::class.java,
+                String::class.java,
+                String::class.java
+            )
+            
+            val batchTranslator: suspend (List<String>) -> Map<String, String> = { texts ->
+                @Suppress("UNCHECKED_CAST")
+                translateBatchMethod.invoke(translationManager, texts, source, target) as Map<String, String>
+            }
+            batchTranslator
+        } catch (e: Exception) {
+            Log.e(TAG, "getBatchTranslator: error", e)
+            null
+        }
+    }
 
     companion object {
         private const val TAG = "ReaderLiveTranslation"

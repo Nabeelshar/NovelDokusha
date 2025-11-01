@@ -30,6 +30,7 @@ internal class ReaderChaptersLoader(
     private val translatorSourceLanguageOrNull: () -> String?,
     private val translatorTargetLanguageOrNull: () -> String?,
     private val translatorProvider: () -> String, // "gemini" or "google"
+    private val translatorBatchTranslateOrNull: (suspend (List<String>) -> Map<String, String>)?,
     private val bookUrl: String,
     val orderedChapters: List<Chapter>,
     @Volatile var readerState: ReaderState,
@@ -37,6 +38,9 @@ internal class ReaderChaptersLoader(
 ) : CoroutineScope {
 
     override val coroutineContext: CoroutineContext = SupervisorJob() + Dispatchers.Main.immediate
+    
+    // Cache for pre-translated chapters
+    private val preTranslatedChapters = mutableMapOf<String, Map<String, String>>()
 
     private sealed interface LoadChapter {
         enum class Type { RestartInitial, Initial, Previous, Next }
@@ -141,8 +145,46 @@ internal class ReaderChaptersLoader(
             items.clear()
             readerViewHandlersActions.doForceUpdateListViewState()
             loadedChapters.clear()
+            preTranslatedChapters.clear()
             readerState = ReaderState.INITIAL_LOAD
             startChapterLoaderWatcher()
+        }
+    }
+    
+    /**
+     * Pre-translate the next chapter in background to improve UX
+     */
+    fun preTranslateNextChapter(currentChapterIndex: Int) {
+        if (!translatorIsActive() || translatorBatchTranslateOrNull == null) return
+        
+        val nextIndex = currentChapterIndex + 1
+        if (nextIndex >= orderedChapters.size) return
+        
+        val nextChapter = orderedChapters[nextIndex]
+        if (preTranslatedChapters.containsKey(nextChapter.url)) return // Already pre-translated
+        
+        launch(Dispatchers.IO) {
+            try {
+                val res = readerRepository.downloadChapter(nextChapter.url)
+                if (res is Response.Success) {
+                    val itemsOriginal = textToItemsConverter(
+                        chapterUrl = nextChapter.url,
+                        chapterIndex = nextIndex,
+                        chapterItemPositionDisplacement = 0,
+                        text = res.data,
+                    )
+                    
+                    val textsToTranslate = itemsOriginal.filterIsInstance<ReaderItem.Body>()
+                        .map { it.text }
+                    
+                    if (textsToTranslate.isNotEmpty() && translatorBatchTranslateOrNull != null) {
+                        val translations = translatorBatchTranslateOrNull.invoke(textsToTranslate)
+                        preTranslatedChapters[nextChapter.url] = translations
+                    }
+                }
+            } catch (e: Exception) {
+                // Silent failure for pre-translation
+            }
         }
     }
 
@@ -475,10 +517,32 @@ internal class ReaderChaptersLoader(
 
                 // Translate if necessary
                 val items = when {
-                    translatorIsActive() -> itemsOriginal.map {
-                        if (it is ReaderItem.Body) {
-                            it.copy(textTranslated = translatorTranslateOrNull(it.text))
-                        } else it
+                    translatorIsActive() && translatorBatchTranslateOrNull != null -> {
+                        // Use batch translation for better efficiency
+                        val textsToTranslate = itemsOriginal.filterIsInstance<ReaderItem.Body>()
+                            .map { it.text }
+                        
+                        if (textsToTranslate.isNotEmpty()) {
+                            // Check if we have pre-translated this chapter
+                            val translations = preTranslatedChapters[chapter.url] ?: translatorBatchTranslateOrNull?.invoke(textsToTranslate)
+                            preTranslatedChapters.remove(chapter.url) // Clear after use
+                            
+                            itemsOriginal.map {
+                                if (it is ReaderItem.Body) {
+                                    it.copy(textTranslated = translations?.get(it.text) ?: it.text)
+                                } else it
+                            }
+                        } else {
+                            itemsOriginal
+                        }
+                    }
+                    translatorIsActive() -> {
+                        // Fallback to paragraph-by-paragraph translation
+                        itemsOriginal.map {
+                            if (it is ReaderItem.Body) {
+                                it.copy(textTranslated = translatorTranslateOrNull(it.text))
+                            } else it
+                        }
                     }
                     else -> itemsOriginal
                 }
