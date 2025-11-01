@@ -9,5 +9,9 @@ android {
 
 dependencies {
     implementation(projects.core)
+    implementation(projects.networking)
     implementation(projects.tooling.textTranslator.domain)
+    
+    // OkHttp for Gemini API calls
+    implementation(libs.okhttp)
 }
