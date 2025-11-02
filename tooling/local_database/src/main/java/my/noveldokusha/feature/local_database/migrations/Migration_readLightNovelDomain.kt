@@ -13,7 +13,7 @@ internal fun MigrationsList.readLightNovelDomainChange_1_today(
     val old2 = "www.readlightnovel.me"
     val new = "www.readlightnovel.today"
     fun replace(columnName: String) =
-        """$columnName = REPLACE($columnName, REPLACE($columnName, "$old1", "$new"), "$old2", "$new")"""
+        """$columnName = REPLACE(REPLACE($columnName, "$old1", "$new"), "$old2", "$new")"""
 
     fun like(columnName: String) =
         """($columnName LIKE "%$old1%" OR $columnName LIKE "%$old2%")"""
