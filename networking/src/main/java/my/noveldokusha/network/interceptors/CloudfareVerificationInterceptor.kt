@@ -102,6 +102,7 @@ internal class CloudFareVerificationInterceptor(
         WebSettings.getDefaultUserAgent(appContext)
 
         withContext(Dispatchers.Main) {
+            var challengeSolved = false
             val webView = WebView(appContext).apply {
                 settings.javaScriptEnabled = true
                 settings.domStorageEnabled = true
@@ -111,14 +112,35 @@ internal class CloudFareVerificationInterceptor(
                 settings.cacheMode = WebSettings.LOAD_DEFAULT
                 settings.userAgentString = request.header("user-agent")
                     ?: UserAgentInterceptor.DEFAULT_USER_AGENT
+                // Increase memory to prevent crashes
+                settings.setRenderPriority(WebSettings.RenderPriority.HIGH)
 
                 cookieManager.setAcceptCookie(true)
                 cookieManager.setAcceptThirdPartyCookies(this, true)
-                webViewClient = object : WebViewClient() {}
+                webViewClient = object : WebViewClient() {
+                    override fun onPageFinished(view: WebView?, url: String?) {
+                        super.onPageFinished(view, url)
+                        // Check if challenge is solved by looking for cf_clearance cookie
+                        val cookies = cookieManager.getCookie(url ?: "")
+                        if (cookies?.contains("cf_clearance") == true) {
+                            challengeSolved = true
+                        }
+                    }
+                }
             }
             webView.loadUrl(request.url.toString(), headers)
-            // This will won't be often executed so no need for eager delay exit
-            delay(20.seconds)
+            
+            // Wait for challenge to be solved, with timeout
+            val maxAttempts = 60 // 30 seconds total
+            var attempts = 0
+            while (!challengeSolved && attempts < maxAttempts) {
+                delay(500) // Check every 500ms
+                attempts++
+            }
+            
+            // Give extra time for cookies to sync
+            delay(1.seconds)
+            
             webView.stopLoading()
             webView.destroy()
         }
