@@ -41,6 +41,8 @@ internal class ReaderChaptersLoader(
     
     // Cache for pre-translated chapters
     private val preTranslatedChapters = mutableMapOf<String, Map<String, String>>()
+    // Track which chapters are currently being pre-translated to avoid duplicates
+    private val preTranslatingChapters = mutableSetOf<String>()
 
     private sealed interface LoadChapter {
         enum class Type { RestartInitial, Initial, Previous, Next }
@@ -146,6 +148,7 @@ internal class ReaderChaptersLoader(
             readerViewHandlersActions.doForceUpdateListViewState()
             loadedChapters.clear()
             preTranslatedChapters.clear()
+            preTranslatingChapters.clear()
             readerState = ReaderState.INITIAL_LOAD
             startChapterLoaderWatcher()
         }
@@ -162,7 +165,20 @@ internal class ReaderChaptersLoader(
         if (nextIndex >= orderedChapters.size) return
         
         val nextChapter = orderedChapters[nextIndex]
-        if (preTranslatedChapters.containsKey(nextChapter.url)) return // Already pre-translated
+        
+        // Already cached or currently translating - skip
+        if (preTranslatedChapters.containsKey(nextChapter.url)) {
+            android.util.Log.d("ReaderChaptersLoader", "Pre-translation: Chapter ${nextChapter.title} already cached")
+            return
+        }
+        if (preTranslatingChapters.contains(nextChapter.url)) {
+            android.util.Log.d("ReaderChaptersLoader", "Pre-translation: Chapter ${nextChapter.title} already in progress")
+            return
+        }
+        
+        // Mark as translating
+        preTranslatingChapters.add(nextChapter.url)
+        android.util.Log.d("ReaderChaptersLoader", "Pre-translation: Starting for chapter ${nextChapter.title}")
         
         launch(Dispatchers.IO) {
             try {
@@ -179,12 +195,16 @@ internal class ReaderChaptersLoader(
                         .map { it.text }
                     
                     if (textsToTranslate.isNotEmpty()) {
+                        android.util.Log.d("ReaderChaptersLoader", "Pre-translation: Translating ${textsToTranslate.size} paragraphs")
                         val translations = batchTranslator.invoke(textsToTranslate)
                         preTranslatedChapters[nextChapter.url] = translations
+                        android.util.Log.d("ReaderChaptersLoader", "Pre-translation: Completed, cached ${translations.size} translations")
                     }
                 }
             } catch (e: Exception) {
-                // Silent failure for pre-translation
+                android.util.Log.e("ReaderChaptersLoader", "Pre-translation: Failed - ${e.message}")
+            } finally {
+                preTranslatingChapters.remove(nextChapter.url)
             }
         }
     }
@@ -521,24 +541,35 @@ internal class ReaderChaptersLoader(
                     translatorIsActive() -> {
                         val batchTranslator = translatorBatchTranslateOrNull()
                         if (batchTranslator != null) {
-                            // Use batch translation for better efficiency
-                            val textsToTranslate = itemsOriginal.filterIsInstance<ReaderItem.Body>()
-                                .map { it.text }
-                            
-                            android.util.Log.d("ReaderChaptersLoader", "Using BATCH translation for ${textsToTranslate.size} paragraphs")
-                            
-                            if (textsToTranslate.isNotEmpty()) {
-                                // Check if we have pre-translated this chapter
-                                val translations = preTranslatedChapters[chapter.url] ?: batchTranslator.invoke(textsToTranslate)
+                            // Check if we have pre-translated this chapter
+                            val cachedTranslations = preTranslatedChapters[chapter.url]
+                            if (cachedTranslations != null) {
+                                android.util.Log.d("ReaderChaptersLoader", "Using CACHED translation for chapter ${chapter.title} (${cachedTranslations.size} translations)")
                                 preTranslatedChapters.remove(chapter.url) // Clear after use
                                 
                                 itemsOriginal.map {
                                     if (it is ReaderItem.Body) {
-                                        it.copy(textTranslated = translations[it.text] ?: it.text)
+                                        it.copy(textTranslated = cachedTranslations[it.text] ?: it.text)
                                     } else it
                                 }
                             } else {
-                                itemsOriginal
+                                // Not cached, translate now
+                                val textsToTranslate = itemsOriginal.filterIsInstance<ReaderItem.Body>()
+                                    .map { it.text }
+                                
+                                android.util.Log.d("ReaderChaptersLoader", "Using BATCH translation for ${textsToTranslate.size} paragraphs in chapter ${chapter.title}")
+                                
+                                if (textsToTranslate.isNotEmpty()) {
+                                    val translations = batchTranslator.invoke(textsToTranslate)
+                                    
+                                    itemsOriginal.map {
+                                        if (it is ReaderItem.Body) {
+                                            it.copy(textTranslated = translations[it.text] ?: it.text)
+                                        } else it
+                                    }
+                                } else {
+                                    itemsOriginal
+                                }
                             }
                         } else {
                             // Fallback to paragraph-by-paragraph translation

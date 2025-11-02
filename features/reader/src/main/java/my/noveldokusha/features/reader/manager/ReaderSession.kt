@@ -55,6 +55,9 @@ internal class ReaderSession(
 
     private val readRoutine = ChaptersIsReadRoutine(appRepository)
     private val orderedChapters = mutableListOf<Chapter>()
+    
+    // Track which chapter index has been triggered for pre-translation to avoid duplicates
+    private var lastPreTranslatedChapterIndex: Int = -1
 
     var bookTitle: String? = null
     private var bookCoverUrl: String? = null
@@ -287,7 +290,11 @@ internal class ReaderSession(
         }
         
         // Pre-translate next chapter at 80% (only with translation enabled)
-        if (progress >= 0.80f && readerLiveTranslation.translatorState != null) {
+        // Only trigger once per chapter to avoid duplicate API calls
+        if (progress >= 0.80f && 
+            readerLiveTranslation.translatorState != null && 
+            chapterIndex != lastPreTranslatedChapterIndex) {
+            lastPreTranslatedChapterIndex = chapterIndex
             scope.launch {
                 readerChaptersLoader.preTranslateNextChapter(chapterIndex)
             }
