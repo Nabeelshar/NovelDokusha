@@ -74,12 +74,11 @@ class Twkan(
 
     override suspend fun getChapterList(bookUrl: String): Response<List<ChapterResult>> = withContext(Dispatchers.Default) {
         tryConnect {
-            // Convert book URL to index URL: /book/{id}.html -> /book/{id}/index.html
-            val indexUrl = bookUrl.replace(".html", "/index.html")
-            val doc = networkClient.get(indexUrl).toDocument()
+            // Convert /book/{id}.html to /{id}/ for chapter list (same as Shuba69 pattern)
+            val chapterListUrl = bookUrl.replace("/book/", "/").replace(".html", "/")
             
-            // Get all chapters from the full catalog page
-            doc.select(".catalog ul li[data-num] a[href]")
+            networkClient.get(chapterListUrl).toDocument()
+                .select("div#catalog ul li a")
                 .map { element ->
                     ChapterResult(
                         title = element.text().trim(),
