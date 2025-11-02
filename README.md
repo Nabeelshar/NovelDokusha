@@ -8,6 +8,7 @@ Search from a large catalog of content, open your pick and just enjoy.
 Copyright © 2023, [nani](https://github.com/nanihadesuka), Released under [GPL-3](LICENSE) FOSS
 
 ## Features
+  - Gemini Translation Support
   - Multiple sources from where to read novels
   - Multiple databases to search for novels
   - Local source to read local EPUBs

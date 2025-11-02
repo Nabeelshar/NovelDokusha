@@ -33,8 +33,11 @@ import my.noveldokusha.scraper.sources.NoBadNovel
 import my.noveldokusha.scraper.sources.FanMTL
 import my.noveldokusha.scraper.sources.LNMTL
 import my.noveldokusha.scraper.sources.WtrLab
+import my.noveldokusha.scraper.sources.Shuba69
+import my.noveldokusha.scraper.sources.UuKanshu
+import my.noveldokusha.scraper.sources.Ddxss
+import my.noveldokusha.scraper.sources.LeYueDu
 // Temporarily disabled - compilation issues
-// import my.noveldokusha.scraper.sources.Shuba69
 // import my.noveldokusha.scraper.sources.Twkan
 import javax.inject.Inject
 import javax.inject.Singleton
@@ -62,8 +65,11 @@ class Scraper @Inject constructor(
         NovelHall(networkClient),
         WuxiaWorld(networkClient),
         IndoWebnovel(networkClient),
+        Shuba69(networkClient),
+        UuKanshu(networkClient),
+        Ddxss(networkClient),
+        LeYueDu(networkClient),
         // Temporarily disabled - compilation issues
-        // Shuba69(networkClient),
         // Twkan(networkClient),
         BacaLightnovel(networkClient),
         SakuraNovel(networkClient),

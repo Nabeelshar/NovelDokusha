@@ -1,0 +1,152 @@
+package my.noveldokusha.scraper.sources
+
+import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.withContext
+import my.noveldokusha.core.LanguageCode
+import my.noveldokusha.core.PagedList
+import my.noveldokusha.core.Response
+import my.noveldokusha.network.NetworkClient
+import my.noveldokusha.network.add
+import my.noveldokusha.network.postPayload
+import my.noveldokusha.network.postRequest
+import my.noveldokusha.network.toDocument
+import my.noveldokusha.network.toUrlBuilderSafe
+import my.noveldokusha.network.tryConnect
+import my.noveldokusha.scraper.R
+import my.noveldokusha.scraper.SourceInterface
+import my.noveldokusha.scraper.TextExtractor
+import my.noveldokusha.scraper.domain.BookResult
+import my.noveldokusha.scraper.domain.ChapterResult
+import org.jsoup.nodes.Document
+import java.net.URI
+import java.net.URLEncoder
+
+/**
+ * Scraper for https://www.69shuba.com/
+ * Based on lightnovel-crawler Python implementation
+ * 
+ * Features:
+ * - GBK encoding support for Chinese content
+ * - Search functionality
+ * - Catalog browsing (monthly visit ranking)
+ * - Chapter list extraction
+ */
+class Shuba69(
+    private val networkClient: NetworkClient
+) : SourceInterface.Catalog {
+    override val id = "69shuba"
+    override val nameStrId = R.string.source_name_69shuba
+    override val baseUrl = "https://www.69shuba.com/"
+    override val catalogUrl = "https://www.69shuba.com/modules/article/toplist.php?sort=monthvisit&page=1"
+    override val language = LanguageCode.CHINESE
+
+    override suspend fun getChapterTitle(doc: Document): String? =
+        withContext(Dispatchers.Default) {
+            doc.selectFirst("div.txtnav h1")?.text()
+        }
+
+    override suspend fun getChapterText(doc: Document): String = withContext(Dispatchers.Default) {
+        val content = doc.selectFirst("div.txtnav")
+        content?.let { 
+            // Remove unwanted elements
+            it.select("h1").remove()
+            it.select("div.txtinfo").remove()
+            it.select("div#txtright").remove()
+            TextExtractor.get(it)
+        } ?: ""
+    }
+
+    override suspend fun getBookCoverImageUrl(bookUrl: String): Response<String?> = withContext(Dispatchers.Default) {
+        tryConnect {
+            networkClient.get(bookUrl).toDocument()
+                .selectFirst("div.bookimg2 img")
+                ?.attr("src")
+                ?.let { if (it.startsWith("http")) it else URI(baseUrl).resolve(it).toString() }
+        }
+    }
+
+    override suspend fun getBookDescription(bookUrl: String): Response<String?> = withContext(Dispatchers.Default) {
+        tryConnect {
+            networkClient.get(bookUrl).toDocument()
+                .selectFirst("div.navtxt")
+                ?.let { TextExtractor.get(it) }
+        }
+    }
+
+    override suspend fun getChapterList(bookUrl: String): Response<List<ChapterResult>> = withContext(Dispatchers.Default) {
+        tryConnect {
+            // Convert /txt/A43616.htm to /A43616/ for chapter list
+            val chapterListUrl = bookUrl.replace("/txt/", "/").replace(".htm", "/")
+            
+            networkClient.get(chapterListUrl).toDocument()
+                .select("div#catalog ul li a")
+                .map { element ->
+                    ChapterResult(
+                        title = element.text().trim(),
+                        url = URI(baseUrl).resolve(element.attr("href")).toString()
+                    )
+                }
+        }
+    }
+
+    override suspend fun getCatalogList(index: Int): Response<PagedList<BookResult>> = withContext(Dispatchers.Default) {
+        tryConnect {
+            val page = index + 1
+            val url = "https://www.69shuba.com/modules/article/toplist.php?sort=monthvisit&page=$page"
+
+            val doc = networkClient.get(url).toDocument()
+            val items = doc.select("div.newbox ul li")
+                .mapNotNull {
+                    val titleLink = it.selectFirst("h3 a:not([imgbox])")
+                    val bookLink = it.selectFirst("a") ?: return@mapNotNull null
+                    val img = it.selectFirst("img")?.attr("src") ?: ""
+                    
+                    val title = titleLink?.text()?.trim() ?: bookLink.text().trim()
+                    
+                    BookResult(
+                        title = title,
+                        url = URI(baseUrl).resolve(bookLink.attr("href")).toString(),
+                        coverImageUrl = if (img.startsWith("http")) img else URI(baseUrl).resolve(img).toString()
+                    )
+                }
+
+            PagedList(list = items, index = index, isLastPage = items.isEmpty())
+        }
+    }
+
+    override suspend fun getCatalogSearch(index: Int, input: String): Response<PagedList<BookResult>> = withContext(Dispatchers.Default) {
+        tryConnect {
+            if (input.isBlank() || index > 0)
+                return@tryConnect PagedList.createEmpty(index = index)
+
+            // Search using POST request with GBK encoding
+            val searchUrl = "https://www.69shuba.com/modules/article/search.php"
+            val encodedQuery = URLEncoder.encode(input, "GBK")
+            
+            val request = postRequest(searchUrl)
+                .postPayload {
+                    add("searchkey", encodedQuery)
+                    add("submit", "Search")
+                }
+            
+            val doc = networkClient.call(request).toDocument()
+            
+            val items = doc.select("div.newbox ul li")
+                .mapNotNull {
+                    val titleLink = it.selectFirst("h3 a:not([imgbox])")
+                    val bookLink = it.selectFirst("a") ?: return@mapNotNull null
+                    val img = it.selectFirst("img")?.attr("src") ?: ""
+                    
+                    val title = titleLink?.text()?.trim() ?: bookLink.text().trim()
+                    
+                    BookResult(
+                        title = title,
+                        url = URI(baseUrl).resolve(bookLink.attr("href")).toString(),
+                        coverImageUrl = if (img.startsWith("http")) img else URI(baseUrl).resolve(img).toString()
+                    )
+                }
+
+            PagedList(list = items, index = index, isLastPage = true)
+        }
+    }
+}

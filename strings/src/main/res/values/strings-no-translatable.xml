@@ -20,7 +20,10 @@
     <string translatable="false" name="source_name_novelbin">NovelBin</string>
     <string translatable="false" name="source_name_novelku">NovelKu</string>
     <string translatable="false" name="source_name_wb_novel">Wb Novel</string>
-    <string translatable="false" name="source_name_69shuba">69Shuba</string>
+    <string translatable="false" name="source_name_69shuba">69书吧 (69shuba.com)</string>
+    <string translatable="false" name="source_name_uukanshu">UU看书 (uukanshu.net)</string>
+    <string translatable="false" name="source_name_ddxss">顶点小说 (ddxss.cc)</string>
+    <string translatable="false" name="source_name_27k">乐阅读 (27k.net)</string>
     <string translatable="false" name="source_name_twkan">Twkan</string>
     <string translatable="false" name="source_name_scribblehub">ScribbleHub</string>
     <string translatable="false" name="source_name_freewebnovel">FreeWebNovel</string>
