@@ -8,21 +8,29 @@ Search from a large catalog of content, open your pick and just enjoy.
 Copyright © 2023, [nani](https://github.com/nanihadesuka), Released under [GPL-3](LICENSE) FOSS
 
 ## Features
-  - Gemini Translation Support
-  - Multiple sources from where to read novels
-  - Multiple databases to search for novels
-  - Local source to read local EPUBs
-  - Easy backup and restore
-  - Light and dark themes
-  - Follows modern Material 3 guidelines
-  - Reader
+  - **Gemini Translation Support** - Live translation powered by Google Gemini AI
+  - **Multiple sources** from where to read novels:
+    - **Chinese Sources** (with GBK encoding support):
+      - 69书吧 (69shuba.com) - With automatic Cloudflare bypass
+      - UU看书 (uukanshu.net)
+      - 顶点小说 (ddxss.cc)
+      - 乐阅读 (27k.net)
+      - Twkan (twkan.com)
+    - Additional English and international sources
+  - **Multiple databases** to search for novels
+  - **Local source** to read local EPUBs
+  - **Easy backup and restore**
+  - **Light and dark themes**
+  - Follows modern **Material 3** guidelines
+  - **Advanced Reader Features**:
     - Infinite scroll
     - Custom font, font size
-    - Live translation
-    - Text to speech
+    - **Live translation** with Gemini AI
+    - **Text to speech**:
       - Background playback
       - Adjust voice, pitch, speed
       - Save your preferred voices
+  - **Automatic Cloudflare bypass** - Seamless access to protected sources
 
   
 ## Screenshots
