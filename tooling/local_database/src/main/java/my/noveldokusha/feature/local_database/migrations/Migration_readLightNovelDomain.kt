@@ -13,24 +13,24 @@ internal fun MigrationsList.readLightNovelDomainChange_1_today(
     val old2 = "www.readlightnovel.me"
     val new = "www.readlightnovel.today"
     fun replace(columnName: String) =
-        """SET $columnName = REPLACE($columnName, REPLACE($columnName, "$old1", "$new"), "$old2", "$new")"""
+        """$columnName = REPLACE($columnName, REPLACE($columnName, "$old1", "$new"), "$old2", "$new")"""
 
     fun like(columnName: String) =
         """($columnName LIKE "%$old1%" OR $columnName LIKE "%$old2%")"""
     it.execSQL(
         """
             UPDATE Book
-                ${replace("url")},
-                ${replace("coverImageUrl")},
+            SET ${replace("url")},
+                ${replace("coverImageUrl")}
             WHERE
-                ${like("chapterUrl")};
+                ${like("url")};
         """.trimIndent()
     )
     it.execSQL(
         """
             UPDATE Chapter
-                ${replace("url")},
-                ${replace("bookUrl")},
+            SET ${replace("url")},
+                ${replace("bookUrl")}
             WHERE
                 ${like("bookUrl")};
         """.trimIndent()
@@ -38,7 +38,7 @@ internal fun MigrationsList.readLightNovelDomainChange_1_today(
     it.execSQL(
         """
             UPDATE ChapterBody
-                ${replace("url")},
+            SET ${replace("url")}
             WHERE
                 ${like("url")};
         """.trimIndent()
