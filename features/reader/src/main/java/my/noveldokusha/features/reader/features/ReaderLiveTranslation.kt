@@ -200,29 +200,27 @@ internal class ReaderLiveTranslation(
             
             Log.d(TAG, "getBatchTranslator: found Gemini translator, creating batch wrapper")
             
-            // Create wrapper that calls the method directly
-            // The manager is already the correct instance, we just call it as "any" and cast result
+            // Create wrapper that calls translateBatch using callSuspend
+            val kClass = geminiClass.kotlin
+            val translateBatchFunc = kClass.members
+                .filterIsInstance<kotlin.reflect.KFunction<*>>()
+                .find { func -> 
+                    func.name == "translateBatch" && 
+                    func.parameters.size == 4  // this + 3 params (texts, source, target)
+                } as? kotlin.reflect.KSuspendFunction4<*, List<String>, String, String, Map<String, String>> ?: run {
+                    Log.e(TAG, "getBatchTranslator: translateBatch function not found")
+                    return null
+                }
+            
             val batchTranslator: suspend (List<String>) -> Map<String, String> = { texts ->
                 @Suppress("UNCHECKED_CAST")
-                withContext(Dispatchers.IO) {
-                    // Use reflection to invoke translateBatch
-                    val method = geminiClass.getDeclaredMethod(
-                        "translateBatch",
-                        List::class.java,
-                        String::class.java,
-                        String::class.java,
-                        kotlin.coroutines.Continuation::class.java
-                    )
-                    method.isAccessible = true
-                    
-                    // Call with suspendCancellableCoroutine to get proper continuation
-                    kotlinx.coroutines.suspendCancellableCoroutine<Map<String, String>> { continuation ->
-                        try {
-                            method.invoke(translationManager, texts, source, target, continuation)
-                        } catch (e: Exception) {
-                            continuation.cancel(e)
-                        }
-                    }
+                try {
+                    // Call using callSuspend which handles suspend functions without explicit continuation
+                    (translateBatchFunc as kotlin.reflect.KSuspendFunction4<Any, List<String>, String, String, Map<String, String>>)
+                        .invoke(translationManager, texts, source, target)
+                } catch (e: Exception) {
+                    Log.e(TAG, "getBatchTranslator: call failed", e)
+                    emptyMap()
                 }
             }
             batchTranslator
