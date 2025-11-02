@@ -24,7 +24,7 @@ import java.net.URI
  * Structure notes:
  * - Catalog pages: novels under `#article_list_content li` with `.newnav h3 a[href]` for title
  * - Book page: `/book/{id}.html` with metadata and recent chapters under `.qustime ul li a[href]`
- * - Full chapter list: `/book/{id}/index.html` with all chapters under `.catalog ul li a[href]`
+ * - Full chapter list: AJAX endpoint `/ajax_novels/chapterlist/{id}.html` returns all chapters as `ul li a[href]`
  * - Chapter page: `/txt/{bookId}/{chapterId}` with content in `#txtcontent0`
  */
 class Twkan(
@@ -74,11 +74,14 @@ class Twkan(
 
     override suspend fun getChapterList(bookUrl: String): Response<List<ChapterResult>> = withContext(Dispatchers.Default) {
         tryConnect {
-            // Convert /book/{id}.html to /{id}/ for chapter list (same as Shuba69 pattern)
-            val chapterListUrl = bookUrl.replace("/book/", "/").replace(".html", "/")
+            // Extract book ID from /book/{id}.html
+            val bookId = bookUrl.substringAfter("/book/").substringBefore(".html")
             
-            networkClient.get(chapterListUrl).toDocument()
-                .select("div#catalog ul li a")
+            // Use AJAX endpoint for full chapter list: /ajax_novels/chapterlist/{id}.html
+            val ajaxUrl = "https://twkan.com/ajax_novels/chapterlist/$bookId.html"
+            
+            networkClient.get(ajaxUrl).toDocument()
+                .select("ul li a[href]")
                 .map { element ->
                     ChapterResult(
                         title = element.text().trim(),
