@@ -30,7 +30,7 @@ internal class ReaderChaptersLoader(
     private val translatorSourceLanguageOrNull: () -> String?,
     private val translatorTargetLanguageOrNull: () -> String?,
     private val translatorProvider: () -> String, // "gemini" or "google"
-    private val translatorBatchTranslateOrNull: (suspend (List<String>) -> Map<String, String>)?,
+    private val translatorBatchTranslateOrNull: () -> (suspend (List<String>) -> Map<String, String>)?,
     private val bookUrl: String,
     val orderedChapters: List<Chapter>,
     @Volatile var readerState: ReaderState,
@@ -155,7 +155,8 @@ internal class ReaderChaptersLoader(
      * Pre-translate the next chapter in background to improve UX
      */
     fun preTranslateNextChapter(currentChapterIndex: Int) {
-        if (!translatorIsActive() || translatorBatchTranslateOrNull == null) return
+        val batchTranslator = translatorBatchTranslateOrNull()
+        if (!translatorIsActive() || batchTranslator == null) return
         
         val nextIndex = currentChapterIndex + 1
         if (nextIndex >= orderedChapters.size) return
@@ -177,8 +178,8 @@ internal class ReaderChaptersLoader(
                     val textsToTranslate = itemsOriginal.filterIsInstance<ReaderItem.Body>()
                         .map { it.text }
                     
-                    if (textsToTranslate.isNotEmpty() && translatorBatchTranslateOrNull != null) {
-                        val translations = translatorBatchTranslateOrNull.invoke(textsToTranslate)
+                    if (textsToTranslate.isNotEmpty()) {
+                        val translations = batchTranslator.invoke(textsToTranslate)
                         preTranslatedChapters[nextChapter.url] = translations
                     }
                 }
@@ -517,31 +518,36 @@ internal class ReaderChaptersLoader(
 
                 // Translate if necessary
                 val items = when {
-                    translatorIsActive() && translatorBatchTranslateOrNull != null -> {
-                        // Use batch translation for better efficiency
-                        val textsToTranslate = itemsOriginal.filterIsInstance<ReaderItem.Body>()
-                            .map { it.text }
-                        
-                        if (textsToTranslate.isNotEmpty()) {
-                            // Check if we have pre-translated this chapter
-                            val translations = preTranslatedChapters[chapter.url] ?: translatorBatchTranslateOrNull?.invoke(textsToTranslate)
-                            preTranslatedChapters.remove(chapter.url) // Clear after use
+                    translatorIsActive() -> {
+                        val batchTranslator = translatorBatchTranslateOrNull()
+                        if (batchTranslator != null) {
+                            // Use batch translation for better efficiency
+                            val textsToTranslate = itemsOriginal.filterIsInstance<ReaderItem.Body>()
+                                .map { it.text }
                             
-                            itemsOriginal.map {
-                                if (it is ReaderItem.Body) {
-                                    it.copy(textTranslated = translations?.get(it.text) ?: it.text)
-                                } else it
+                            android.util.Log.d("ReaderChaptersLoader", "Using BATCH translation for ${textsToTranslate.size} paragraphs")
+                            
+                            if (textsToTranslate.isNotEmpty()) {
+                                // Check if we have pre-translated this chapter
+                                val translations = preTranslatedChapters[chapter.url] ?: batchTranslator.invoke(textsToTranslate)
+                                preTranslatedChapters.remove(chapter.url) // Clear after use
+                                
+                                itemsOriginal.map {
+                                    if (it is ReaderItem.Body) {
+                                        it.copy(textTranslated = translations[it.text] ?: it.text)
+                                    } else it
+                                }
+                            } else {
+                                itemsOriginal
                             }
                         } else {
-                            itemsOriginal
-                        }
-                    }
-                    translatorIsActive() -> {
-                        // Fallback to paragraph-by-paragraph translation
-                        itemsOriginal.map {
-                            if (it is ReaderItem.Body) {
-                                it.copy(textTranslated = translatorTranslateOrNull(it.text))
-                            } else it
+                            // Fallback to paragraph-by-paragraph translation
+                            android.util.Log.d("ReaderChaptersLoader", "Using PARAGRAPH-BY-PARAGRAPH translation (batch translator not available)")
+                            itemsOriginal.map {
+                                if (it is ReaderItem.Body) {
+                                    it.copy(textTranslated = translatorTranslateOrNull(it.text))
+                                } else it
+                            }
                         }
                     }
                     else -> itemsOriginal

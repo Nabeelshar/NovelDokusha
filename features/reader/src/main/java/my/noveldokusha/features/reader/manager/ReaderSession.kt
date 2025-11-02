@@ -106,7 +106,7 @@ internal class ReaderSession(
         translatorSourceLanguageOrNull = { readerLiveTranslation.translatorState?.sourceLocale?.displayLanguage },
         translatorTargetLanguageOrNull = { readerLiveTranslation.translatorState?.targetLocale?.displayLanguage },
         translatorProvider = { if (readerLiveTranslation.isUsingGemini()) "gemini" else "google" },
-        translatorBatchTranslateOrNull = readerLiveTranslation.getBatchTranslator(),
+        translatorBatchTranslateOrNull = { readerLiveTranslation.getBatchTranslator() },
         bookUrl = bookUrl,
         orderedChapters = orderedChapters,
         readerState = ReaderState.INITIAL_LOAD,
