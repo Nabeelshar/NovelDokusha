@@ -76,7 +76,7 @@ internal class ReaderItemAdapter(
     private val topPadding = ReaderItem.Padding(chapterIndex = Int.MIN_VALUE)
     private val bottomPadding = ReaderItem.Padding(chapterIndex = Int.MAX_VALUE)
 
-    override fun getViewTypeCount(): Int = 11
+    override fun getViewTypeCount(): Int = 12
     override fun getItemViewType(position: Int) = when (getItem(position)) {
         is ReaderItem.Body -> 0
         is ReaderItem.Image -> 1
