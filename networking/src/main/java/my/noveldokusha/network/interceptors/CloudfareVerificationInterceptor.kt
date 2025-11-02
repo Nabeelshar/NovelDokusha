@@ -6,6 +6,7 @@ import android.webkit.CookieManager
 import android.webkit.WebSettings
 import android.webkit.WebView
 import android.webkit.WebViewClient
+import android.util.Log
 import dagger.hilt.android.qualifiers.ApplicationContext
 import kotlinx.coroutines.CancellationException
 import kotlinx.coroutines.Dispatchers
@@ -29,6 +30,8 @@ private val ERROR_CODES = listOf(
     HttpsURLConnection.HTTP_UNAVAILABLE /*503*/
 )
 private val SERVER_CHECK = arrayOf("cloudflare-nginx", "cloudflare")
+
+private const val TAG = "CloudflareInterceptor"
 
 /**
  * If a CloudFare security verification redirection is detected, execute a
@@ -96,6 +99,10 @@ internal class CloudFareVerificationInterceptor(
         cookieManager: CookieManager
     ): Unit = withContext(Dispatchers.Default) {
         val url = request.url.toString()
+        val domain = request.url.host
+
+        Log.d(TAG, "Starting Cloudflare challenge resolution for: $url")
+        Log.d(TAG, "Domain: $domain")
 
         // Launch existing WebViewActivity for user to manually solve the challenge
         withContext(Dispatchers.Main) {
@@ -119,14 +126,23 @@ internal class CloudFareVerificationInterceptor(
             // Flush cookies to ensure they're written
             cookieManager.flush()
             
-            // Get ALL cookies from the page - doesn't matter which domain
-            // CookieManager stores all cookies, just check if cf_clearance exists anywhere
+            // Get ALL cookies from the page
             val allCookies = cookieManager.getCookie(url) ?: ""
             
+            // Log cookies every 10 seconds for debugging
+            if (attempts % 10 == 0) {
+                Log.d(TAG, "Attempt $attempts/$maxAttempts - Cookies: ${allCookies.take(200)}")
+            }
+            
             if (allCookies.contains("cf_clearance")) {
+                Log.d(TAG, "cf_clearance cookie found! Challenge solved.")
                 challengeSolved = true
             }
             attempts++
+        }
+        
+        if (!challengeSolved) {
+            Log.w(TAG, "Challenge NOT solved after $attempts attempts")
         }
         
         // Give extra time for cookies to fully sync
