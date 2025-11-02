@@ -20,7 +20,9 @@ import my.noveldokusha.features.reader.domain.ReadingChapterPosStats
 import my.noveldokusha.features.reader.domain.indexOfReaderItem
 import my.noveldokusha.features.reader.tools.textToItemsConverter
 import my.noveldokusha.features.reader.ui.ReaderViewHandlersActions
+import my.noveldokusha.feature.local_database.DAOs.ChapterTranslationDao
 import my.noveldokusha.feature.local_database.tables.Chapter
+import my.noveldokusha.feature.local_database.tables.ChapterTranslation
 import kotlin.coroutines.CoroutineContext
 
 internal class ReaderChaptersLoader(
@@ -35,6 +37,7 @@ internal class ReaderChaptersLoader(
     val orderedChapters: List<Chapter>,
     @Volatile var readerState: ReaderState,
     private val readerViewHandlersActions: ReaderViewHandlersActions,
+    private val chapterTranslationDao: ChapterTranslationDao,
 ) : CoroutineScope {
 
     override val coroutineContext: CoroutineContext = SupervisorJob() + Dispatchers.Main.immediate
@@ -197,6 +200,23 @@ internal class ReaderChaptersLoader(
                     if (textsToTranslate.isNotEmpty()) {
                         android.util.Log.d("ReaderChaptersLoader", "Pre-translation: Translating ${textsToTranslate.size} paragraphs")
                         val translations = batchTranslator.invoke(textsToTranslate)
+                        
+                        // Save to database for persistence across sessions
+                        val sourceLang = translatorSourceLanguageOrNull() ?: "en"
+                        val targetLang = translatorTargetLanguageOrNull() ?: "zh"
+                        val translationEntities = translations.map { (original, translated) ->
+                            ChapterTranslation(
+                                chapterUrl = nextChapter.url,
+                                sourceLang = sourceLang,
+                                targetLang = targetLang,
+                                originalText = original,
+                                translatedText = translated
+                            )
+                        }
+                        chapterTranslationDao.insertReplace(translationEntities)
+                        android.util.Log.d("ReaderChaptersLoader", "Pre-translation: Saved ${translationEntities.size} translations to database")
+                        
+                        // Also keep in memory cache for immediate use
                         preTranslatedChapters[nextChapter.url] = translations
                         android.util.Log.d("ReaderChaptersLoader", "Pre-translation: Completed, cached ${translations.size} translations")
                     }
@@ -539,36 +559,73 @@ internal class ReaderChaptersLoader(
                 // Translate if necessary
                 val items = when {
                     translatorIsActive() -> {
+                        val sourceLang = translatorSourceLanguageOrNull() ?: "en"
+                        val targetLang = translatorTargetLanguageOrNull() ?: "zh"
                         val batchTranslator = translatorBatchTranslateOrNull()
+                        
                         if (batchTranslator != null) {
-                            // Check if we have pre-translated this chapter
-                            val cachedTranslations = preTranslatedChapters[chapter.url]
-                            if (cachedTranslations != null) {
-                                android.util.Log.d("ReaderChaptersLoader", "Using CACHED translation for chapter ${chapter.title} (${cachedTranslations.size} translations)")
+                            // 1. Check memory cache first
+                            val memCachedTranslations = preTranslatedChapters[chapter.url]
+                            if (memCachedTranslations != null) {
+                                android.util.Log.d("ReaderChaptersLoader", "Using MEMORY CACHE for chapter ${chapter.title} (${memCachedTranslations.size} translations)")
                                 preTranslatedChapters.remove(chapter.url) // Clear after use
                                 
                                 itemsOriginal.map {
                                     if (it is ReaderItem.Body) {
-                                        it.copy(textTranslated = cachedTranslations[it.text] ?: it.text)
+                                        it.copy(textTranslated = memCachedTranslations[it.text] ?: it.text)
                                     } else it
                                 }
                             } else {
-                                // Not cached, translate now
-                                val textsToTranslate = itemsOriginal.filterIsInstance<ReaderItem.Body>()
-                                    .map { it.text }
+                                // 2. Check database cache
+                                val dbTranslations = withContext(Dispatchers.IO) {
+                                    chapterTranslationDao.getTranslations(
+                                        chapterUrl = chapter.url,
+                                        sourceLang = sourceLang,
+                                        targetLang = targetLang
+                                    ).associate { it.originalText to it.translatedText }
+                                }
                                 
-                                android.util.Log.d("ReaderChaptersLoader", "Using BATCH translation for ${textsToTranslate.size} paragraphs in chapter ${chapter.title}")
-                                
-                                if (textsToTranslate.isNotEmpty()) {
-                                    val translations = batchTranslator.invoke(textsToTranslate)
+                                if (dbTranslations.isNotEmpty()) {
+                                    android.util.Log.d("ReaderChaptersLoader", "Using DATABASE CACHE for chapter ${chapter.title} (${dbTranslations.size} translations)")
                                     
                                     itemsOriginal.map {
                                         if (it is ReaderItem.Body) {
-                                            it.copy(textTranslated = translations[it.text] ?: it.text)
+                                            it.copy(textTranslated = dbTranslations[it.text] ?: it.text)
                                         } else it
                                     }
                                 } else {
-                                    itemsOriginal
+                                    // 3. Not cached anywhere - translate now and save to DB
+                                    val textsToTranslate = itemsOriginal.filterIsInstance<ReaderItem.Body>()
+                                        .map { it.text }
+                                    
+                                    android.util.Log.d("ReaderChaptersLoader", "Translating and caching ${textsToTranslate.size} paragraphs for chapter ${chapter.title}")
+                                    
+                                    if (textsToTranslate.isNotEmpty()) {
+                                        val translations = batchTranslator.invoke(textsToTranslate)
+                                        
+                                        // Save translations to database for future use
+                                        withContext(Dispatchers.IO) {
+                                            val translationEntities = translations.map { (original, translated) ->
+                                                ChapterTranslation(
+                                                    chapterUrl = chapter.url,
+                                                    sourceLang = sourceLang,
+                                                    targetLang = targetLang,
+                                                    originalText = original,
+                                                    translatedText = translated
+                                                )
+                                            }
+                                            chapterTranslationDao.insertReplace(translationEntities)
+                                            android.util.Log.d("ReaderChaptersLoader", "Saved ${translationEntities.size} translations to database")
+                                        }
+                                        
+                                        itemsOriginal.map {
+                                            if (it is ReaderItem.Body) {
+                                                it.copy(textTranslated = translations[it.text] ?: it.text)
+                                            } else it
+                                        }
+                                    } else {
+                                        itemsOriginal
+                                    }
                                 }
                             }
                         } else {

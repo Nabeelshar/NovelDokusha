@@ -33,6 +33,7 @@ import my.noveldokusha.features.reader.tools.ChaptersIsReadRoutine
 import my.noveldokusha.features.reader.ui.ReaderViewHandlersActions
 import my.noveldokusha.text_translator.domain.TranslationManager
 import my.noveldokusha.text_to_speech.Utterance
+import my.noveldokusha.feature.local_database.DAOs.ChapterTranslationDao
 import my.noveldokusha.feature.local_database.tables.Chapter
 import kotlin.properties.Delegates
 
@@ -46,6 +47,7 @@ internal class ReaderSession(
     readerViewHandlersActions: ReaderViewHandlersActions,
     @ApplicationContext private val context: Context,
     translationManager: TranslationManager,
+    private val chapterTranslationDao: ChapterTranslationDao,
 ) {
     private val scope: CoroutineScope = CoroutineScope(
         SupervisorJob() + Dispatchers.Default + CoroutineName("ReaderSession")
@@ -114,6 +116,7 @@ internal class ReaderSession(
         orderedChapters = orderedChapters,
         readerState = ReaderState.INITIAL_LOAD,
         readerViewHandlersActions = readerViewHandlersActions,
+        chapterTranslationDao = chapterTranslationDao,
     )
 
     val items = readerChaptersLoader.getItems()
