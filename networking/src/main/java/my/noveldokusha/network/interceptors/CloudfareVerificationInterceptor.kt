@@ -71,7 +71,15 @@ internal class CloudFareVerificationInterceptor(
                     resolveWithWebView(request, cookieManager)
                 }
 
-                val responseCloudfare = chain.proceed(request)
+                // Get the cookies and add them to the request
+                val cookies = cookieManager.getCookie(request.url.toString()) ?: ""
+                Log.d(TAG, "Retrying request with cookies: ${cookies.take(200)}")
+                
+                val newRequest = request.newBuilder()
+                    .header("Cookie", cookies)
+                    .build()
+
+                val responseCloudfare = chain.proceed(newRequest)
 
                 if (!isNotCloudFare(responseCloudfare)) {
                     throw CloudfareVerificationBypassFailedException()
