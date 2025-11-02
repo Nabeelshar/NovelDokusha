@@ -34,8 +34,8 @@ class LeYueDu(
 ) : SourceInterface.Catalog {
     override val id = "27k"
     override val nameStrId = R.string.source_name_27k
-    override val baseUrl = "https://www.27k.net/"
-    override val catalogUrl = "https://www.27k.net/top/allvisit.html"
+    override val baseUrl = "https://27k.net/"
+    override val catalogUrl = "https://27k.net/"
     override val language = LanguageCode.CHINESE
 
     override suspend fun getChapterTitle(doc: Document): String? =
@@ -93,26 +93,35 @@ class LeYueDu(
 
     override suspend fun getCatalogList(index: Int): Response<PagedList<BookResult>> = withContext(Dispatchers.Default) {
         tryConnect {
-            val page = index + 1
-            val url = "https://www.27k.net/top/allvisit/$page.html"
-
+            // 27k.net homepage shows hot novels, pagination not supported
+            if (index > 0) {
+                return@tryConnect PagedList.createEmpty(index = index)
+            }
+            
+            val url = "https://27k.net/"
             val doc = networkClient.get(url).toDocument()
-            val items = doc.select("div.newbox ul li, ul.seeWell li")
-                .mapNotNull {
-                    val titleLink = it.selectFirst("h3 a:not([imgbox])")
-                    val link = it.selectFirst("a") ?: return@mapNotNull null
-                    val img = it.selectFirst("img")?.attr("src") ?: ""
-                    
-                    val title = titleLink?.text()?.trim() ?: link.text().trim()
+            
+            // Parse "热门小说" (Hot Novels) section
+            val items = doc.select(".rank_box_content .bookbox")
+                .mapNotNull { bookbox ->
+                    val link = bookbox.selectFirst("a[href*=/book/]") ?: return@mapNotNull null
+                    val bookUrl = link.attr("abs:href")
+                    val title = link.attr("title").ifEmpty { link.text().trim() }
+                    val imgElement = bookbox.selectFirst("img")
+                    val imgSrc = imgElement?.attr("src") ?: imgElement?.attr("data-original") ?: ""
                     
                     BookResult(
                         title = title,
-                        url = URI(baseUrl).resolve(link.attr("href")).toString(),
-                        coverImageUrl = if (img.startsWith("http")) img else URI(baseUrl).resolve(img).toString()
+                        url = bookUrl,
+                        coverImageUrl = when {
+                            imgSrc.startsWith("http") -> imgSrc
+                            imgSrc.startsWith("/") -> URI(baseUrl).resolve(imgSrc).toString()
+                            else -> ""
+                        }
                     )
                 }
-
-            PagedList(list = items, index = index, isLastPage = items.isEmpty())
+            
+            PagedList(list = items, index = index, isLastPage = true)
         }
     }
 

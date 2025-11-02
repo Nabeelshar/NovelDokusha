@@ -34,10 +34,10 @@ import java.net.URLEncoder
 class Shuba69(
     private val networkClient: NetworkClient
 ) : SourceInterface.Catalog {
-    override val id = "69shuba"
+    override val id = "shuba69"
     override val nameStrId = R.string.source_name_69shuba
     override val baseUrl = "https://www.69shuba.com/"
-    override val catalogUrl = "https://www.69shuba.com/modules/article/toplist.php?sort=monthvisit&page=1"
+    override val catalogUrl = "https://www.69shuba.com/novels/monthvisit_0_0_1.htm"
     override val language = LanguageCode.CHINESE
 
     override suspend fun getChapterTitle(doc: Document): String? =
@@ -92,7 +92,7 @@ class Shuba69(
     override suspend fun getCatalogList(index: Int): Response<PagedList<BookResult>> = withContext(Dispatchers.Default) {
         tryConnect {
             val page = index + 1
-            val url = "https://www.69shuba.com/modules/article/toplist.php?sort=monthvisit&page=$page"
+            val url = "https://www.69shuba.com/novels/monthvisit_0_0_$page.htm"
 
             val doc = networkClient.get(url).toDocument()
             val items = doc.select("div.newbox ul li")
