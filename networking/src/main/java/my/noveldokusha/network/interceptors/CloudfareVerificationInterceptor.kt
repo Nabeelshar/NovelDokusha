@@ -76,8 +76,13 @@ internal class CloudFareVerificationInterceptor(
                 Log.d(TAG, "Full cookies for retry: $cookies")
                 Log.d(TAG, "cf_clearance present: ${cookies.contains("cf_clearance")}")
                 
+                // Get the User-Agent that WebView used (must match for Cloudflare)
+                val webViewUserAgent = WebSettings.getDefaultUserAgent(appContext)
+                Log.d(TAG, "Using WebView User-Agent: $webViewUserAgent")
+                
                 val newRequest = request.newBuilder()
                     .header("Cookie", cookies)
+                    .header("User-Agent", webViewUserAgent)
                     .build()
 
                 val responseCloudfare = chain.proceed(newRequest)
