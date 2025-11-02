@@ -73,16 +73,21 @@ internal class CloudFareVerificationInterceptor(
 
                 // Get the cookies and add them to the request
                 val cookies = cookieManager.getCookie(request.url.toString()) ?: ""
-                Log.d(TAG, "Retrying request with cookies: ${cookies.take(200)}")
+                Log.d(TAG, "Full cookies for retry: $cookies")
+                Log.d(TAG, "cf_clearance present: ${cookies.contains("cf_clearance")}")
                 
                 val newRequest = request.newBuilder()
                     .header("Cookie", cookies)
                     .build()
 
                 val responseCloudfare = chain.proceed(newRequest)
+                Log.d(TAG, "Retry response: code=${responseCloudfare.code}, server=${responseCloudfare.header("Server")}")
 
                 if (!isNotCloudFare(responseCloudfare)) {
+                    Log.w(TAG, "Retry still blocked by Cloudflare after cookie set")
                     throw CloudfareVerificationBypassFailedException()
+                } else {
+                    Log.d(TAG, "Successfully bypassed Cloudflare!")
                 }
 
                 responseCloudfare
