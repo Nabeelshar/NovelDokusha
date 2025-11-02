@@ -11,6 +11,7 @@ import kotlinx.coroutines.SupervisorJob
 import kotlinx.coroutines.flow.MutableSharedFlow
 import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
+import kotlinx.coroutines.withContext
 import my.noveldokusha.core.appPreferences.AppPreferences
 import my.noveldokusha.text_translator.domain.TranslationManager
 import my.noveldokusha.text_translator.domain.TranslationModelState
@@ -189,7 +190,7 @@ internal class ReaderLiveTranslation(
         val source = translatorState?.source ?: return null
         val target = translatorState?.target ?: return null
         
-        // Try to cast to Gemini manager for batch translation using reflection
+        // Try to get Gemini manager and call translateBatch directly
         return try {
             val geminiClass = Class.forName("my.noveldokusha.text_translator.TranslationManagerGemini")
             if (!geminiClass.isInstance(translationManager)) {
@@ -197,20 +198,32 @@ internal class ReaderLiveTranslation(
                 return null
             }
             
-            // Get the translateBatch method using Kotlin reflection to handle suspend functions properly
-            val kClass = geminiClass.kotlin
-            val translateBatchFunc = kClass.members.find { 
-                it.name == "translateBatch"
-            } ?: run {
-                Log.e(TAG, "getBatchTranslator: translateBatch method not found")
-                return null
-            }
+            Log.d(TAG, "getBatchTranslator: found Gemini translator, creating batch wrapper")
             
-            Log.d(TAG, "getBatchTranslator: found translateBatch method, creating wrapper")
-            
+            // Create wrapper that calls the method directly
+            // The manager is already the correct instance, we just call it as "any" and cast result
             val batchTranslator: suspend (List<String>) -> Map<String, String> = { texts ->
                 @Suppress("UNCHECKED_CAST")
-                translateBatchFunc.call(translationManager, texts, source, target) as Map<String, String>
+                withContext(Dispatchers.IO) {
+                    // Use reflection to invoke translateBatch
+                    val method = geminiClass.getDeclaredMethod(
+                        "translateBatch",
+                        List::class.java,
+                        String::class.java,
+                        String::class.java,
+                        kotlin.coroutines.Continuation::class.java
+                    )
+                    method.isAccessible = true
+                    
+                    // Call with suspendCancellableCoroutine to get proper continuation
+                    kotlinx.coroutines.suspendCancellableCoroutine<Map<String, String>> { continuation ->
+                        try {
+                            method.invoke(translationManager, texts, source, target, continuation)
+                        } catch (e: Exception) {
+                            continuation.cancel(e)
+                        }
+                    }
+                }
             }
             batchTranslator
         } catch (e: Exception) {
