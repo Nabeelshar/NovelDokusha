@@ -17,6 +17,7 @@ sealed interface SourceInterface {
     val baseUrl: String
     val isLocalSource: Boolean get() = true
     val requiresLogin: Boolean get() = false
+    val charset: String get() = "UTF-8"
 
     // Transform current url to preferred url
     suspend fun transformChapterUrl(url: String): String = url

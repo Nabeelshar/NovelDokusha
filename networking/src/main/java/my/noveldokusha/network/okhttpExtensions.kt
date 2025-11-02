@@ -12,6 +12,7 @@ import okhttp3.Response
 import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
 import java.io.IOException
+import java.nio.charset.Charset
 import kotlin.coroutines.resume
 import kotlin.coroutines.resumeWithException
 import kotlin.coroutines.suspendCoroutine
@@ -34,6 +35,13 @@ suspend fun OkHttpClient.call(builder: Request.Builder) = newCall(builder.build(
 
 fun Response.toDocument(): Document {
     return Jsoup.parse(body.string())
+}
+
+fun Response.toDocument(charset: String): Document {
+    val bytes = body.bytes()
+    val html = String(bytes, Charset.forName(charset))
+    val baseUrl = request.url.toString()
+    return Jsoup.parse(html, baseUrl)
 }
 
 fun Response.toJson(): JsonElement {

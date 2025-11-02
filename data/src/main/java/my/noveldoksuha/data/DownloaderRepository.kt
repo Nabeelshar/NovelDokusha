@@ -86,7 +86,7 @@ class DownloaderRepository @Inject constructor(
             }
 
             scraper.getCompatibleSource(realUrl)?.also { source ->
-                val doc = networkClient.get(source.transformChapterUrl(realUrl)).toDocument()
+                val doc = networkClient.get(source.transformChapterUrl(realUrl)).toDocument(source.charset)
                 val data = my.noveldokusha.scraper.ChapterDownload(
                     body = source.getChapterText(doc) ?: return@also,
                     title = source.getChapterTitle(doc)

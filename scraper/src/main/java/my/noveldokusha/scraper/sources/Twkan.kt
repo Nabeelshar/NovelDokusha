@@ -106,7 +106,7 @@ class Twkan(
                 .mapNotNull { li ->
                     val link = li.selectFirst(".newnav h3 a[href]") ?: return@mapNotNull null
                     val imgElement = li.selectFirst(".imgbox img[src], .imgbox img[data-src]")
-                    val imgSrc = imgElement?.attr("src") ?: imgElement?.attr("data-src") ?: ""
+                    val imgSrc = imgElement?.attr("data-src") ?: imgElement?.attr("data-src") ?: ""
                     
                     BookResult(
                         title = link.text().trim(),

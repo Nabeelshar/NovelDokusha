@@ -39,6 +39,7 @@ class Shuba69(
     override val baseUrl = "https://www.69shuba.com/"
     override val catalogUrl = "https://www.69shuba.com/novels/monthvisit_0_0_1.htm"
     override val language = LanguageCode.CHINESE
+    override val charset = "GBK"
 
     override suspend fun getChapterTitle(doc: Document): String? =
         withContext(Dispatchers.Default) {
@@ -67,7 +68,7 @@ class Shuba69(
 
     override suspend fun getBookDescription(bookUrl: String): Response<String?> = withContext(Dispatchers.Default) {
         tryConnect {
-            networkClient.get(bookUrl).toDocument()
+            networkClient.get(bookUrl).toDocument(charset)
                 .selectFirst("div.navtxt")
                 ?.let { TextExtractor.get(it) }
         }
@@ -78,7 +79,7 @@ class Shuba69(
             // Convert /txt/A43616.htm to /A43616/ for chapter list
             val chapterListUrl = bookUrl.replace("/txt/", "/").replace(".htm", "/")
             
-            networkClient.get(chapterListUrl).toDocument()
+            networkClient.get(chapterListUrl).toDocument(charset)
                 .select("div#catalog ul li a")
                 .map { element ->
                     ChapterResult(
@@ -99,7 +100,7 @@ class Shuba69(
                 .mapNotNull {
                     val titleLink = it.selectFirst("h3 a:not([imgbox])")
                     val bookLink = it.selectFirst("a") ?: return@mapNotNull null
-                    val img = it.selectFirst("img")?.attr("src") ?: ""
+                    val img = it.selectFirst("img")?.attr("data-src") ?: ""
                     
                     val title = titleLink?.text()?.trim() ?: bookLink.text().trim()
                     
@@ -135,7 +136,7 @@ class Shuba69(
                 .mapNotNull {
                     val titleLink = it.selectFirst("h3 a:not([imgbox])")
                     val bookLink = it.selectFirst("a") ?: return@mapNotNull null
-                    val img = it.selectFirst("img")?.attr("src") ?: ""
+                    val img = it.selectFirst("img")?.attr("data-src") ?: ""
                     
                     val title = titleLink?.text()?.trim() ?: bookLink.text().trim()
                     
