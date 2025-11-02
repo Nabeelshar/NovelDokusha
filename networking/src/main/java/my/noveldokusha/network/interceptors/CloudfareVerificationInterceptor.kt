@@ -96,7 +96,6 @@ internal class CloudFareVerificationInterceptor(
         cookieManager: CookieManager
     ): Unit = withContext(Dispatchers.Default) {
         val url = request.url.toString()
-        val domain = request.url.host
 
         // Launch existing WebViewActivity for user to manually solve the challenge
         withContext(Dispatchers.Main) {
@@ -109,7 +108,7 @@ internal class CloudFareVerificationInterceptor(
         }
 
         // Wait for the user to solve the challenge
-        // Check for cf_clearance cookie every second for both full URL and domain
+        // Check for cf_clearance cookie in ANY domain
         val maxAttempts = 120 // 2 minutes timeout
         var attempts = 0
         var challengeSolved = false
@@ -117,12 +116,14 @@ internal class CloudFareVerificationInterceptor(
         while (!challengeSolved && attempts < maxAttempts) {
             delay(1.seconds)
             
-            // Check cookies for both the full URL and just the domain
-            val cookiesUrl = cookieManager.getCookie(url)
-            val cookiesDomain = cookieManager.getCookie(domain)
+            // Flush cookies to ensure they're written
+            cookieManager.flush()
             
-            if (cookiesUrl?.contains("cf_clearance") == true ||
-                cookiesDomain?.contains("cf_clearance") == true) {
+            // Get ALL cookies from the page - doesn't matter which domain
+            // CookieManager stores all cookies, just check if cf_clearance exists anywhere
+            val allCookies = cookieManager.getCookie(url) ?: ""
+            
+            if (allCookies.contains("cf_clearance")) {
                 challengeSolved = true
             }
             attempts++
@@ -130,6 +131,7 @@ internal class CloudFareVerificationInterceptor(
         
         // Give extra time for cookies to fully sync
         if (challengeSolved) {
+            cookieManager.flush()
             delay(2.seconds)
         }
     }
