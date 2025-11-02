@@ -16,7 +16,7 @@
         android:paddingVertical="6dp"
         android:textSize="11sp"
         android:textStyle="italic"
-        android:textColor="?attr/colorOnSurfaceVariant"
+        android:textColor="?android:attr/textColorSecondary"
         android:text="Powered by Gemini"
         />
 </FrameLayout>
