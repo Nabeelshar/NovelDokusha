@@ -14,6 +14,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import my.noveldokusha.core.domain.CloudfareVerificationBypassFailedException
 import my.noveldokusha.core.domain.WebViewCookieManagerInitializationFailedException
+import my.noveldokusha.network.CloudflareWebViewActivity
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
@@ -94,70 +95,36 @@ internal class CloudFareVerificationInterceptor(
         request: Request,
         cookieManager: CookieManager
     ): Unit = withContext(Dispatchers.Default) {
-        val headers = request
-            .headers
-            .toMultimap()
-            .mapValues { it.value.firstOrNull() ?: "" }
+        val userAgent = request.header("user-agent") 
+            ?: UserAgentInterceptor.DEFAULT_USER_AGENT
 
-        WebSettings.getDefaultUserAgent(appContext)
-
+        // Launch activity for user to manually solve the challenge
         withContext(Dispatchers.Main) {
-            var challengeSolved = false
-            var webView: WebView? = null
-            
-            try {
-                webView = WebView(appContext).apply {
-                    settings.javaScriptEnabled = true
-                    settings.domStorageEnabled = true
-                    settings.databaseEnabled = true
-                    settings.useWideViewPort = false
-                    settings.loadWithOverviewMode = false
-                    settings.cacheMode = WebSettings.LOAD_NO_CACHE
-                    settings.userAgentString = request.header("user-agent")
-                        ?: UserAgentInterceptor.DEFAULT_USER_AGENT
-                    // Reduce resource usage to prevent crashes
-                    settings.blockNetworkImage = true
-                    settings.loadsImagesAutomatically = false
-                    settings.javaScriptCanOpenWindowsAutomatically = false
+            CloudflareWebViewActivity.start(
+                appContext,
+                request.url.toString(),
+                userAgent
+            )
+        }
 
-                    cookieManager.setAcceptCookie(true)
-                    cookieManager.setAcceptThirdPartyCookies(this, true)
-                    webViewClient = object : WebViewClient() {
-                        override fun onPageFinished(view: WebView?, url: String?) {
-                            super.onPageFinished(view, url)
-                            // Check if challenge is solved by looking for cf_clearance cookie
-                            val cookies = cookieManager.getCookie(url ?: "")
-                            if (cookies?.contains("cf_clearance") == true) {
-                                challengeSolved = true
-                            }
-                        }
-                    }
-                }
-                webView.loadUrl(request.url.toString(), headers)
-                
-                // Wait for challenge to be solved, with timeout
-                val maxAttempts = 80 // 40 seconds total (increased timeout)
-                var attempts = 0
-                while (!challengeSolved && attempts < maxAttempts) {
-                    delay(500) // Check every 500ms
-                    attempts++
-                }
-                
-                // Give extra time for cookies to sync
-                if (challengeSolved) {
-                    delay(2.seconds)
-                }
-            } catch (e: Exception) {
-                // Catch any WebView crashes and continue
-                android.util.Log.e("CloudflareInterceptor", "WebView error: ${e.message}")
-            } finally {
-                try {
-                    webView?.stopLoading()
-                    webView?.destroy()
-                } catch (e: Exception) {
-                    // Ignore cleanup errors
-                }
+        // Wait for the user to solve the challenge
+        // Check for cf_clearance cookie every second
+        val maxAttempts = 120 // 2 minutes timeout
+        var attempts = 0
+        var challengeSolved = false
+        
+        while (!challengeSolved && attempts < maxAttempts) {
+            delay(1.seconds)
+            val cookies = cookieManager.getCookie(request.url.toString())
+            if (cookies?.contains("cf_clearance") == true) {
+                challengeSolved = true
             }
+            attempts++
+        }
+        
+        // Give extra time for cookies to fully sync
+        if (challengeSolved) {
+            delay(2.seconds)
         }
     }
 }
