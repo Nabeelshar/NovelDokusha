@@ -4,7 +4,7 @@
     <application>
         <activity
             android:name="my.noveldokusha.network.CloudflareWebViewActivity"
-            android:theme="@android:style/Theme.Material.Light.Dialog"
+            android:theme="@style/Theme.MaterialComponents.Light.Dialog"
             android:exported="false" />
     </application>
 
