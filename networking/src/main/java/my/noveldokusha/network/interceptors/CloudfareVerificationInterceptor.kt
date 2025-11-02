@@ -122,7 +122,17 @@ internal class CloudFareVerificationInterceptor(
         Log.d(TAG, "Starting Cloudflare challenge resolution for: $url")
         Log.d(TAG, "Domain: $domain")
 
-        // Launch existing WebViewActivity for user to manually solve the challenge
+        // First, check if we already have a valid cf_clearance cookie
+        cookieManager.flush()
+        val existingCookies = cookieManager.getCookie(url) ?: ""
+        
+        if (existingCookies.contains("cf_clearance")) {
+            Log.d(TAG, "cf_clearance cookie already exists, no WebView needed")
+            return@withContext
+        }
+
+        // Only launch WebView if we don't have the cookie
+        Log.d(TAG, "No cf_clearance cookie found, launching WebView for manual challenge")
         withContext(Dispatchers.Main) {
             val intent = Intent().apply {
                 setClassName(appContext, "my.noveldokusha.webview.WebViewActivity")
@@ -133,7 +143,6 @@ internal class CloudFareVerificationInterceptor(
         }
 
         // Wait for the user to solve the challenge
-        // Check for cf_clearance cookie in ANY domain
         val maxAttempts = 120 // 2 minutes timeout
         var attempts = 0
         var challengeSolved = false
@@ -149,11 +158,11 @@ internal class CloudFareVerificationInterceptor(
             
             // Log cookies every 10 seconds for debugging
             if (attempts % 10 == 0) {
-                Log.d(TAG, "Attempt $attempts/$maxAttempts - Cookies: ${allCookies.take(200)}")
+                Log.d(TAG, "Attempt $attempts/$maxAttempts - Waiting for cf_clearance...")
             }
             
             if (allCookies.contains("cf_clearance")) {
-                Log.d(TAG, "cf_clearance cookie found! Challenge solved.")
+                Log.d(TAG, "cf_clearance cookie found! Challenge solved after $attempts seconds.")
                 challengeSolved = true
             }
             attempts++
