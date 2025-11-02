@@ -93,7 +93,7 @@ internal class CloudFareVerificationInterceptor(
     private suspend fun resolveWithWebView(
         request: Request,
         cookieManager: CookieManager
-    ) = withContext(Dispatchers.Default) {
+    ): Unit = withContext(Dispatchers.Default) {
         val headers = request
             .headers
             .toMultimap()
@@ -103,46 +103,61 @@ internal class CloudFareVerificationInterceptor(
 
         withContext(Dispatchers.Main) {
             var challengeSolved = false
-            val webView = WebView(appContext).apply {
-                settings.javaScriptEnabled = true
-                settings.domStorageEnabled = true
-                settings.databaseEnabled = true
-                settings.useWideViewPort = true
-                settings.loadWithOverviewMode = true
-                settings.cacheMode = WebSettings.LOAD_DEFAULT
-                settings.userAgentString = request.header("user-agent")
-                    ?: UserAgentInterceptor.DEFAULT_USER_AGENT
-                // Increase memory to prevent crashes
-                settings.setRenderPriority(WebSettings.RenderPriority.HIGH)
+            var webView: WebView? = null
+            
+            try {
+                webView = WebView(appContext).apply {
+                    settings.javaScriptEnabled = true
+                    settings.domStorageEnabled = true
+                    settings.databaseEnabled = true
+                    settings.useWideViewPort = false
+                    settings.loadWithOverviewMode = false
+                    settings.cacheMode = WebSettings.LOAD_NO_CACHE
+                    settings.userAgentString = request.header("user-agent")
+                        ?: UserAgentInterceptor.DEFAULT_USER_AGENT
+                    // Reduce resource usage to prevent crashes
+                    settings.blockNetworkImage = true
+                    settings.loadsImagesAutomatically = false
+                    settings.javaScriptCanOpenWindowsAutomatically = false
 
-                cookieManager.setAcceptCookie(true)
-                cookieManager.setAcceptThirdPartyCookies(this, true)
-                webViewClient = object : WebViewClient() {
-                    override fun onPageFinished(view: WebView?, url: String?) {
-                        super.onPageFinished(view, url)
-                        // Check if challenge is solved by looking for cf_clearance cookie
-                        val cookies = cookieManager.getCookie(url ?: "")
-                        if (cookies?.contains("cf_clearance") == true) {
-                            challengeSolved = true
+                    cookieManager.setAcceptCookie(true)
+                    cookieManager.setAcceptThirdPartyCookies(this, true)
+                    webViewClient = object : WebViewClient() {
+                        override fun onPageFinished(view: WebView?, url: String?) {
+                            super.onPageFinished(view, url)
+                            // Check if challenge is solved by looking for cf_clearance cookie
+                            val cookies = cookieManager.getCookie(url ?: "")
+                            if (cookies?.contains("cf_clearance") == true) {
+                                challengeSolved = true
+                            }
                         }
                     }
                 }
+                webView.loadUrl(request.url.toString(), headers)
+                
+                // Wait for challenge to be solved, with timeout
+                val maxAttempts = 80 // 40 seconds total (increased timeout)
+                var attempts = 0
+                while (!challengeSolved && attempts < maxAttempts) {
+                    delay(500) // Check every 500ms
+                    attempts++
+                }
+                
+                // Give extra time for cookies to sync
+                if (challengeSolved) {
+                    delay(2.seconds)
+                }
+            } catch (e: Exception) {
+                // Catch any WebView crashes and continue
+                android.util.Log.e("CloudflareInterceptor", "WebView error: ${e.message}")
+            } finally {
+                try {
+                    webView?.stopLoading()
+                    webView?.destroy()
+                } catch (e: Exception) {
+                    // Ignore cleanup errors
+                }
             }
-            webView.loadUrl(request.url.toString(), headers)
-            
-            // Wait for challenge to be solved, with timeout
-            val maxAttempts = 60 // 30 seconds total
-            var attempts = 0
-            while (!challengeSolved && attempts < maxAttempts) {
-                delay(500) // Check every 500ms
-                attempts++
-            }
-            
-            // Give extra time for cookies to sync
-            delay(1.seconds)
-            
-            webView.stopLoading()
-            webView.destroy()
         }
     }
 }
