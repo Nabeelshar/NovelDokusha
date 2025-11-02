@@ -192,22 +192,29 @@ internal class ReaderLiveTranslation(
         // Try to cast to Gemini manager for batch translation using reflection
         return try {
             val geminiClass = Class.forName("my.noveldokusha.text_translator.TranslationManagerGemini")
-            if (!geminiClass.isInstance(translationManager)) return null
+            if (!geminiClass.isInstance(translationManager)) {
+                Log.d(TAG, "getBatchTranslator: translator is not Gemini")
+                return null
+            }
             
-            val translateBatchMethod = geminiClass.getMethod(
-                "translateBatch",
-                List::class.java,
-                String::class.java,
-                String::class.java
-            )
+            // Get the translateBatch method using Kotlin reflection to handle suspend functions properly
+            val kClass = geminiClass.kotlin
+            val translateBatchFunc = kClass.members.find { 
+                it.name == "translateBatch"
+            } ?: run {
+                Log.e(TAG, "getBatchTranslator: translateBatch method not found")
+                return null
+            }
+            
+            Log.d(TAG, "getBatchTranslator: found translateBatch method, creating wrapper")
             
             val batchTranslator: suspend (List<String>) -> Map<String, String> = { texts ->
                 @Suppress("UNCHECKED_CAST")
-                translateBatchMethod.invoke(translationManager, texts, source, target) as Map<String, String>
+                translateBatchFunc.call(translationManager, texts, source, target) as Map<String, String>
             }
             batchTranslator
         } catch (e: Exception) {
-            Log.e(TAG, "getBatchTranslator: error", e)
+            Log.e(TAG, "getBatchTranslator: error (${translationManager.javaClass.simpleName})", e)
             null
         }
     }
