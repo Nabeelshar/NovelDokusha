@@ -14,7 +14,7 @@ import kotlinx.coroutines.runBlocking
 import kotlinx.coroutines.withContext
 import my.noveldokusha.core.domain.CloudfareVerificationBypassFailedException
 import my.noveldokusha.core.domain.WebViewCookieManagerInitializationFailedException
-import my.noveldokusha.network.CloudflareWebViewActivity
+import android.content.Intent
 import okhttp3.Interceptor
 import okhttp3.Request
 import okhttp3.Response
@@ -95,28 +95,34 @@ internal class CloudFareVerificationInterceptor(
         request: Request,
         cookieManager: CookieManager
     ): Unit = withContext(Dispatchers.Default) {
-        val userAgent = request.header("user-agent") 
-            ?: UserAgentInterceptor.DEFAULT_USER_AGENT
+        val url = request.url.toString()
+        val domain = request.url.host
 
-        // Launch activity for user to manually solve the challenge
+        // Launch existing WebViewActivity for user to manually solve the challenge
         withContext(Dispatchers.Main) {
-            CloudflareWebViewActivity.start(
-                appContext,
-                request.url.toString(),
-                userAgent
-            )
+            val intent = Intent().apply {
+                setClassName(appContext, "my.noveldokusha.webview.WebViewActivity")
+                putExtra("url", url)
+                addFlags(Intent.FLAG_ACTIVITY_NEW_TASK)
+            }
+            appContext.startActivity(intent)
         }
 
         // Wait for the user to solve the challenge
-        // Check for cf_clearance cookie every second
+        // Check for cf_clearance cookie every second for both full URL and domain
         val maxAttempts = 120 // 2 minutes timeout
         var attempts = 0
         var challengeSolved = false
         
         while (!challengeSolved && attempts < maxAttempts) {
             delay(1.seconds)
-            val cookies = cookieManager.getCookie(request.url.toString())
-            if (cookies?.contains("cf_clearance") == true) {
+            
+            // Check cookies for both the full URL and just the domain
+            val cookiesUrl = cookieManager.getCookie(url)
+            val cookiesDomain = cookieManager.getCookie(domain)
+            
+            if (cookiesUrl?.contains("cf_clearance") == true ||
+                cookiesDomain?.contains("cf_clearance") == true) {
                 challengeSolved = true
             }
             attempts++
