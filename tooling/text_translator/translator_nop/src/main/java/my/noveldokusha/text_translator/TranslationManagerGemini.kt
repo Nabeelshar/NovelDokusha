@@ -417,6 +417,25 @@ class TranslationManagerGemini(
         // No-op for API-based translation - models can't be removed
     }
 
+    /**
+     * Invalidate cached translation(s).
+     * If text is null, clears all cached entries for the given source/target pair.
+     * If text is provided, clears the exact cache entry for source-target:text
+     */
+    fun invalidateCacheFor(sourceLanguage: String, targetLanguage: String, text: String? = null) {
+        Log.d(TAG, "invalidateCacheFor: source=$sourceLanguage, target=$targetLanguage, text=${if (text == null) "ALL" else "specific"}")
+        if (text == null) {
+            val prefix = "$sourceLanguage-$targetLanguage:"
+            val keysToRemove = translationCache.keys.filter { it.startsWith(prefix) }
+            Log.d(TAG, "invalidateCacheFor: clearing ${keysToRemove.size} cached entries")
+            keysToRemove.forEach { translationCache.remove(it) }
+        } else {
+            val key = "$sourceLanguage-$targetLanguage:$text"
+            val removed = translationCache.remove(key)
+            Log.d(TAG, "invalidateCacheFor: ${if (removed != null) "cleared" else "no entry found for"} specific key")
+        }
+    }
+
     companion object {
         private const val TAG = "TranslationGemini"
     }

@@ -276,6 +276,7 @@ private fun ViewsPreview(
         onEnable = {},
         onSourceChange = {},
         onDownloadTranslationModel = {}
+        , onRedoTranslation = {}
     )
 
     val textToSpeechSettingData = TextToSpeechSettingData(

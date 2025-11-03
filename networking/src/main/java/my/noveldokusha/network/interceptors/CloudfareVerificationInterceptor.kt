@@ -89,8 +89,42 @@ internal class CloudFareVerificationInterceptor(
                 Log.d(TAG, "Retry response: code=${responseCloudfare.code}, server=${responseCloudfare.header("Server")}")
 
                 if (!isNotCloudFare(responseCloudfare)) {
-                    Log.w(TAG, "Retry still blocked by Cloudflare after cookie set")
-                    throw CloudfareVerificationBypassFailedException()
+                    Log.w(TAG, "Retry still blocked by Cloudflare after cookie set - forcing fresh challenge")
+                    responseCloudfare.close()
+                    
+                    // Clear the invalid cf_clearance cookie and force a fresh WebView challenge
+                    val oldCookie = cookieManager.getCookie(request.url.toString())
+                    val cookieWithoutClearance = oldCookie
+                        ?.splitToSequence(";")
+                        ?.map { it.split("=").map(String::trim) }
+                        ?.filter { it[0] != "cf_clearance" }
+                        ?.joinToString(";") { it.joinToString("=") }
+                    cookieManager.setCookie(request.url.toString(), cookieWithoutClearance)
+                    cookieManager.flush()
+                    
+                    Log.d(TAG, "Cleared invalid cf_clearance, launching WebView for fresh challenge")
+                    runBlocking(Dispatchers.IO) {
+                        resolveWithWebView(request, cookieManager)
+                    }
+                    
+                    // Retry one more time with fresh cookie
+                    val freshCookies = cookieManager.getCookie(request.url.toString()) ?: ""
+                    Log.d(TAG, "Fresh cookies after challenge: cf_clearance present=${freshCookies.contains("cf_clearance")}")
+                    
+                    val finalRequest = request.newBuilder()
+                        .header("Cookie", freshCookies)
+                        .header("User-Agent", webViewUserAgent)
+                        .build()
+                    
+                    val finalResponse = chain.proceed(finalRequest)
+                    Log.d(TAG, "Final retry response: code=${finalResponse.code}")
+                    
+                    if (!isNotCloudFare(finalResponse)) {
+                        Log.e(TAG, "Still blocked after fresh challenge - giving up")
+                        throw CloudfareVerificationBypassFailedException()
+                    }
+                    
+                    return@withLock finalResponse
                 } else {
                     Log.d(TAG, "Successfully bypassed Cloudflare!")
                 }

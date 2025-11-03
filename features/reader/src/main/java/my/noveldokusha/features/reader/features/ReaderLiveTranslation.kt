@@ -27,6 +27,7 @@ internal data class LiveTranslationSettingData(
     val onSourceChange: (TranslationModelState?) -> Unit,
     val onTargetChange: (TranslationModelState?) -> Unit,
     val onDownloadTranslationModel: (language: String) -> Unit,
+    val onRedoTranslation: () -> Unit,
 )
 
 internal class ReaderLiveTranslation(
@@ -46,6 +47,7 @@ internal class ReaderLiveTranslation(
         onSourceChange = ::onSourceChange,
         onTargetChange = ::onTargetChange,
         onDownloadTranslationModel = translationManager::downloadModel
+        , onRedoTranslation = ::onRedoTranslation
     )
 
     var translatorState: TranslatorState? = null
@@ -177,6 +179,48 @@ internal class ReaderLiveTranslation(
 
     fun isUsingGemini(): Boolean {
         return translationManager.isUsingOnlineTranslation
+    }
+
+    private fun onRedoTranslation() {
+        scope.launch {
+            try {
+                Log.d(TAG, "onRedoTranslation: starting")
+                val source = state.source.value?.language ?: run {
+                    Log.w(TAG, "onRedoTranslation: source is null")
+                    return@launch
+                }
+                val target = state.target.value?.language ?: run {
+                    Log.w(TAG, "onRedoTranslation: target is null")
+                    return@launch
+                }
+
+                Log.d(TAG, "onRedoTranslation: invalidating cache for source=$source, target=$target")
+                
+                // Call invalidateCacheFor via reflection
+                val methods = translationManager.javaClass.methods
+                val method = methods.find { it.name == "invalidateCacheFor" }
+                
+                if (method != null) {
+                    try {
+                        Log.d(TAG, "onRedoTranslation: found invalidateCacheFor method, invoking...")
+                        // Call with (String, String, String?) - third param null clears all for this pair
+                        method.invoke(translationManager, source, target, null)
+                        Log.d(TAG, "onRedoTranslation: cache invalidation successful")
+                    } catch (e: Exception) {
+                        Log.e(TAG, "onRedoTranslation: reflection call failed", e)
+                    }
+                } else {
+                    Log.w(TAG, "onRedoTranslation: invalidateCacheFor method not found on ${translationManager.javaClass.simpleName}")
+                }
+
+                // Notify listeners to recreate translator / re-run translations
+                Log.d(TAG, "onRedoTranslation: emitting translator changed event")
+                _onTranslatorChanged.emit(Unit)
+                Log.d(TAG, "onRedoTranslation: complete")
+            } catch (e: Exception) {
+                Log.e(TAG, "onRedoTranslation: error", e)
+            }
+        }
     }
     
     /**

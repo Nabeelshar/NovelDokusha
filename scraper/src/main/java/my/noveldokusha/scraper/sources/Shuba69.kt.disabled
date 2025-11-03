@@ -1,4 +1,4 @@
- package my.noveldokusha.scraper.sources
+package my.noveldokusha.scraper.sources
 
 import kotlinx.coroutines.Dispatchers
 import kotlinx.coroutines.withContext
@@ -6,9 +6,9 @@ import my.noveldokusha.core.LanguageCode
 import my.noveldokusha.core.PagedList
 import my.noveldokusha.core.Response
 import my.noveldokusha.network.NetworkClient
-import my.noveldokusha.network.postPayload
-import my.noveldokusha.network.postRequest
+import my.noveldokusha.network.add
 import my.noveldokusha.network.toDocument
+import my.noveldokusha.network.toUrlBuilderSafe
 import my.noveldokusha.network.tryConnect
 import my.noveldokusha.scraper.R
 import my.noveldokusha.scraper.SourceInterface
@@ -20,22 +20,22 @@ import java.net.URI
 import java.net.URLEncoder
 
 /**
- * Scraper for https://www.27k.net/ (LeYueDu / 乐阅读)
+ * Scraper for https://www.69shuba.com/
  * Based on lightnovel-crawler Python implementation
  * 
  * Features:
- * - Multiple domain support (27k.net, lreads.com)
- * - UTF-8 encoding
+ * - GBK encoding support for Chinese content
  * - Search functionality
- * - Volume-based chapter organization (100 chapters per volume)
+ * - Catalog browsing (monthly visit ranking)
+ * - Chapter list extraction
  */
-class LeYueDu(
+class Shuba69(
     private val networkClient: NetworkClient
 ) : SourceInterface.Catalog {
-    override val id = "27k"
-    override val nameStrId = R.string.source_name_27k
-    override val baseUrl = "https://27k.net/"
-    override val catalogUrl = "https://27k.net/"
+    override val id = "69shuba"
+    override val nameStrId = R.string.source_name_69shuba
+    override val baseUrl = "https://www.69shuba.com/"
+    override val catalogUrl = "https://www.69shuba.com/modules/article/toplist.php?sort=monthvisit&page=1"
     override val language = LanguageCode.CHINESE
 
     override suspend fun getChapterTitle(doc: Document): String? =
@@ -50,7 +50,6 @@ class LeYueDu(
             it.select("h1").remove()
             it.select("div.txtinfo").remove()
             it.select("div#txtright").remove()
-            it.select("div.baocuo").remove()
             TextExtractor.get(it)
         } ?: ""
     }
@@ -66,21 +65,18 @@ class LeYueDu(
 
     override suspend fun getBookDescription(bookUrl: String): Response<String?> = withContext(Dispatchers.Default) {
         tryConnect {
-            // Convert /book/70154.html to /read/70154/ for better synopsis
-            val readUrl = bookUrl.replace("/book/", "/read/").replace(".html", "/")
-            
-            networkClient.get(readUrl).toDocument()
-                .selectFirst("div.newnav div.ellipsis_2")
+            networkClient.get(bookUrl).toDocument()
+                .selectFirst("div.navtxt")
                 ?.let { TextExtractor.get(it) }
         }
     }
 
     override suspend fun getChapterList(bookUrl: String): Response<List<ChapterResult>> = withContext(Dispatchers.Default) {
         tryConnect {
-            // Convert /book/70154.html to /read/70154/ for chapter list
-            val readUrl = bookUrl.replace("/book/", "/read/").replace(".html", "/")
+            // Convert /txt/A43616.htm to /A43616/ for chapter list
+            val chapterListUrl = bookUrl.replace("/txt/", "/").replace(".htm", "/")
             
-            networkClient.get(readUrl).toDocument()
+            networkClient.get(chapterListUrl).toDocument()
                 .select("div#catalog ul li a")
                 .map { element ->
                     ChapterResult(
@@ -93,35 +89,26 @@ class LeYueDu(
 
     override suspend fun getCatalogList(index: Int): Response<PagedList<BookResult>> = withContext(Dispatchers.Default) {
         tryConnect {
-            // 27k.net homepage shows hot novels, pagination not supported
-            if (index > 0) {
-                return@tryConnect PagedList.createEmpty(index = index)
-            }
-            
-            val url = "https://27k.net/"
+            val page = index + 1
+            val url = "https://www.69shuba.com/modules/article/toplist.php?sort=monthvisit&page=$page"
+
             val doc = networkClient.get(url).toDocument()
-            
-            // Parse "热门小说" (Hot Novels) section
-            val items = doc.select(".rank_box_content .bookbox")
-                .mapNotNull { bookbox ->
-                    val link = bookbox.selectFirst("a[href*=/book/]") ?: return@mapNotNull null
-                    val bookUrl = link.attr("abs:href")
-                    val title = link.attr("title").ifEmpty { link.text().trim() }
-                    val imgElement = bookbox.selectFirst("img")
-                    val imgSrc = imgElement?.attr("src") ?: imgElement?.attr("data-original") ?: ""
+            val items = doc.select("div.newbox ul li")
+                .mapNotNull {
+                    val titleLink = it.selectFirst("h3 a:not([imgbox])")
+                    val bookLink = it.selectFirst("a") ?: return@mapNotNull null
+                    val img = it.selectFirst("img")?.attr("src") ?: ""
+                    
+                    val title = titleLink?.text()?.trim() ?: bookLink.text().trim()
                     
                     BookResult(
                         title = title,
-                        url = bookUrl,
-                        coverImageUrl = when {
-                            imgSrc.startsWith("http") -> imgSrc
-                            imgSrc.startsWith("/") -> URI(baseUrl).resolve(imgSrc).toString()
-                            else -> ""
-                        }
+                        url = URI(baseUrl).resolve(bookLink.attr("href")).toString(),
+                        coverImageUrl = if (img.startsWith("http")) img else URI(baseUrl).resolve(img).toString()
                     )
                 }
-            
-            PagedList(list = items, index = index, isLastPage = true)
+
+            PagedList(list = items, index = index, isLastPage = items.isEmpty())
         }
     }
 
@@ -130,29 +117,28 @@ class LeYueDu(
             if (input.isBlank() || index > 0)
                 return@tryConnect PagedList.createEmpty(index = index)
 
-            // Search using POST request
-            val searchUrl = "https://so.27k.net/search/"
-            val encodedQuery = URLEncoder.encode(input, "UTF-8")
+            // Search using POST request with GBK encoding
+            val searchUrl = "https://www.69shuba.com/modules/article/search.php"
+            val encodedQuery = URLEncoder.encode(input, "GBK")
+            val postData = "searchkey=$encodedQuery&submit=Search"
             
-            val request = postRequest(searchUrl)
-                .postPayload {
-                    add("searchkey", encodedQuery)
-                    add("searchtype", "all")
-                }
-            
-            val doc = networkClient.call(request).toDocument()
+            val doc = networkClient.post(
+                url = searchUrl,
+                data = postData.toByteArray(Charsets.ISO_8859_1),
+                headers = mapOf("Content-Type" to "application/x-www-form-urlencoded")
+            ).toDocument()
             
             val items = doc.select("div.newbox ul li")
                 .mapNotNull {
                     val titleLink = it.selectFirst("h3 a:not([imgbox])")
-                    val link = it.selectFirst("h3 a") ?: return@mapNotNull null
+                    val bookLink = it.selectFirst("a") ?: return@mapNotNull null
                     val img = it.selectFirst("img")?.attr("src") ?: ""
                     
-                    val title = titleLink?.text()?.trim() ?: link.text().trim()
+                    val title = titleLink?.text()?.trim() ?: bookLink.text().trim()
                     
                     BookResult(
                         title = title,
-                        url = URI(baseUrl).resolve(link.attr("href")).toString(),
+                        url = URI(baseUrl).resolve(bookLink.attr("href")).toString(),
                         coverImageUrl = if (img.startsWith("http")) img else URI(baseUrl).resolve(img).toString()
                     )
                 }

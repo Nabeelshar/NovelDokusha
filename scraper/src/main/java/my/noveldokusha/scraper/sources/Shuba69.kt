@@ -79,6 +79,7 @@ class Shuba69(
             // Convert /txt/A43616.htm to /A43616/ for chapter list
             val chapterListUrl = bookUrl.replace("/txt/", "/").replace(".htm", "/")
             
+            // Site lists chapters newest-first; reverse so we return oldest-first
             networkClient.get(chapterListUrl).toDocument(charset)
                 .select("div#catalog ul li a")
                 .map { element ->
@@ -87,6 +88,7 @@ class Shuba69(
                         url = URI(baseUrl).resolve(element.attr("href")).toString()
                     )
                 }
+                .reversed()
         }
     }
 
@@ -130,7 +132,21 @@ class Shuba69(
                     add("submit", "Search")
                 }
             
-            val doc = networkClient.call(request).toDocument()
+            // Some sites may challenge POST search requests via Cloudflare. Try once,
+            // and if the Cloudflare bypass interceptor throws, attempt to prime cookies
+            // by visiting the base site and then retry the POST once.
+            val doc = try {
+                networkClient.call(request).toDocument()
+            } catch (e: Exception) {
+                // Attempt to trigger Cloudflare bypass (interceptor will launch WebView if needed)
+                try {
+                    networkClient.get(baseUrl).toDocument()
+                } catch (_: Exception) {
+                    // ignore - best-effort
+                }
+                // Retry the original request once
+                networkClient.call(request).toDocument()
+            }
             
             val items = doc.select("div.newbox ul li")
                 .mapNotNull {

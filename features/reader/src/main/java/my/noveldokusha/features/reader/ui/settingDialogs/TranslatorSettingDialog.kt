@@ -12,6 +12,7 @@ import androidx.compose.foundation.layout.width
 import androidx.compose.material.icons.Icons
 import androidx.compose.material.icons.automirrored.filled.ArrowRightAlt
 import androidx.compose.material.icons.filled.CloudDownload
+import androidx.compose.material.icons.filled.Refresh
 import androidx.compose.material.icons.outlined.CloudDownload
 import androidx.compose.material3.CardDefaults
 import androidx.compose.material3.CircularProgressIndicator
@@ -81,6 +82,10 @@ internal fun TranslatorSettingDialog(
                         verticalAlignment = Alignment.CenterVertically,
                         modifier = Modifier.padding(horizontal = 16.dp)
                     ) {
+                        // Redo translation action (forces re-run of online translation)
+                        IconButton(onClick = { state.onRedoTranslation() }) {
+                            Icon(Icons.Filled.Refresh, contentDescription = stringResource(R.string.live_translation))
+                        }
                         Box(
                             modifier = Modifier
                                 .clickableWithUnboundedIndicator {
