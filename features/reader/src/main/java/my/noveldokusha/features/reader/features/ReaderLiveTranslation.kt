@@ -39,6 +39,9 @@ internal class ReaderLiveTranslation(
         SupervisorJob() + Dispatchers.Default + CoroutineName("LiveTranslator")
     )
 ) {
+    // Callback to clear chapter cache (set by ReaderSession)
+    var onClearChapterCache: (() -> Unit)? = null
+    
     val state = LiveTranslationSettingData(
         isAvailable = translationManager.available,
         listOfAvailableModels = translationManager.models,
@@ -215,12 +218,13 @@ internal class ReaderLiveTranslation(
                     Log.w(TAG, "onRedoTranslation: invalidateCacheFor method not found on ${translationManager.javaClass.simpleName}")
                 }
 
-                // 2. Clear database cache
+                // 2. Clear ALL database cached translations (not just current language pair)
+                // This ensures translations from previous sessions are also cleared
                 chapterTranslationDao?.let { dao ->
                     try {
-                        Log.d(TAG, "onRedoTranslation: clearing database cache for language pair")
+                        Log.d(TAG, "onRedoTranslation: clearing ALL database cached translations")
                         val deletedCount = withContext(Dispatchers.IO) {
-                            dao.deleteTranslationsByLanguagePair(source, target)
+                            dao.deleteAllTranslations()
                         }
                         Log.d(TAG, "onRedoTranslation: database cache cleared successfully (deleted $deletedCount translations)")
                     } catch (e: Exception) {
@@ -228,7 +232,12 @@ internal class ReaderLiveTranslation(
                     }
                 } ?: Log.w(TAG, "onRedoTranslation: chapterTranslationDao is null, skipping database clear")
 
-                // 3. Force recreate translator state to trigger full reload
+                // 3. Clear ReaderChaptersLoader in-memory pre-translation cache
+                onClearChapterCache?.invoke()
+                    ?.also { Log.d(TAG, "onRedoTranslation: chapter cache cleared") }
+                    ?: Log.w(TAG, "onRedoTranslation: no chapter cache clear callback")
+
+                // 4. Force recreate translator state to trigger full reload
                 // This mimics what happens when user changes source/target language
                 Log.d(TAG, "onRedoTranslation: forcing translator state update")
                 translatorState = null

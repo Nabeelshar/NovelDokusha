@@ -118,7 +118,10 @@ internal class ReaderSession(
         readerState = ReaderState.INITIAL_LOAD,
         readerViewHandlersActions = readerViewHandlersActions,
         chapterTranslationDao = chapterTranslationDao,
-    )
+    ).also {
+        // Connect the translation refresh callback to clear chapter cache
+        readerLiveTranslation.onClearChapterCache = { it.clearTranslationCache() }
+    }
 
     val items = readerChaptersLoader.getItems()
 

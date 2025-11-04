@@ -59,6 +59,12 @@ interface ChapterTranslationDao {
     ): Int
     
     /**
+     * Delete ALL translations (used for refresh)
+     */
+    @Query("DELETE FROM ChapterTranslation")
+    suspend fun deleteAllTranslations(): Int
+    
+    /**
      * Get count of translations for a chapter
      */
     @Query("""

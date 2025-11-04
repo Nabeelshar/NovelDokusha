@@ -47,6 +47,15 @@ internal class ReaderChaptersLoader(
     // Track which chapters are currently being pre-translated to avoid duplicates
     private val preTranslatingChapters = mutableSetOf<String>()
 
+    /**
+     * Clear all translation caches (used when refreshing translations)
+     */
+    fun clearTranslationCache() {
+        android.util.Log.d("ReaderChaptersLoader", "clearTranslationCache: clearing ${preTranslatedChapters.size} pre-translated chapters")
+        preTranslatedChapters.clear()
+        preTranslatingChapters.clear()
+    }
+
     private sealed interface LoadChapter {
         enum class Type { RestartInitial, Initial, Previous, Next }
         data class RestartInitialChapter(val state: ChapterState) : LoadChapter

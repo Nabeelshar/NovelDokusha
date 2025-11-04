@@ -38,6 +38,7 @@ import my.noveldokusha.scraper.sources.UuKanshu
 import my.noveldokusha.scraper.sources.Ddxss
 import my.noveldokusha.scraper.sources.LeYueDu
 import my.noveldokusha.scraper.sources.Twkan
+import my.noveldokusha.scraper.sources.Ttkan
 import javax.inject.Inject
 import javax.inject.Singleton
 
@@ -69,6 +70,7 @@ class Scraper @Inject constructor(
         Ddxss(networkClient),
         LeYueDu(networkClient),
         Twkan(networkClient),
+        Ttkan(networkClient),
         BacaLightnovel(networkClient),
         SakuraNovel(networkClient),
         MeioNovel(networkClient),
