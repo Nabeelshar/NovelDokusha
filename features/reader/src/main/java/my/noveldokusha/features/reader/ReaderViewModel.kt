@@ -114,4 +114,8 @@ internal class ReaderViewModel @Inject constructor(
 
     fun markChapterEndAsSeen(chapterUrl: String) =
         readerSession.markChapterEndAsSeen(chapterUrl = chapterUrl)
+
+    fun saveCurrentReadingPosition() {
+        readerSession.saveCurrentPosition(readingCurrentChapter)
+    }
 }

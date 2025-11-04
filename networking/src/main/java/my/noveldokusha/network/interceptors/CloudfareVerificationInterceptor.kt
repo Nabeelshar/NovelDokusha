@@ -68,7 +68,7 @@ internal class CloudFareVerificationInterceptor(
                 cookieManager.setCookie(request.url.toString(), cookie)
 
                 runBlocking(Dispatchers.IO) {
-                    resolveWithWebView(request, cookieManager)
+                    resolveWithWebView(request, cookieManager, forceChallenge = false)
                 }
 
                 // Get the cookies and add them to the request
@@ -92,19 +92,23 @@ internal class CloudFareVerificationInterceptor(
                     Log.w(TAG, "Retry still blocked by Cloudflare after cookie set - forcing fresh challenge")
                     responseCloudfare.close()
                     
-                    // Clear the invalid cf_clearance cookie and force a fresh WebView challenge
-                    val oldCookie = cookieManager.getCookie(request.url.toString())
-                    val cookieWithoutClearance = oldCookie
-                        ?.splitToSequence(";")
-                        ?.map { it.split("=").map(String::trim) }
-                        ?.filter { it[0] != "cf_clearance" }
-                        ?.joinToString(";") { it.joinToString("=") }
-                    cookieManager.setCookie(request.url.toString(), cookieWithoutClearance)
+                    // Clear ALL cookies for this domain to ensure fresh start
+                    val domain = request.url.host
+                    Log.d(TAG, "Clearing ALL cookies for domain: $domain")
+                    
+                    cookieManager.removeAllCookies(null)
                     cookieManager.flush()
                     
-                    Log.d(TAG, "Cleared invalid cf_clearance, launching WebView for fresh challenge")
+                    // Additional aggressive clear - remove session cookies
+                    cookieManager.removeSessionCookies(null)
+                    cookieManager.flush()
+                    
+                    // Wait a bit for cookies to be fully cleared
+                    Thread.sleep(500)
+                    
+                    Log.d(TAG, "Cookies cleared, launching WebView for fresh challenge")
                     runBlocking(Dispatchers.IO) {
-                        resolveWithWebView(request, cookieManager)
+                        resolveWithWebView(request, cookieManager, forceChallenge = true)
                     }
                     
                     // Retry one more time with fresh cookie
@@ -148,7 +152,8 @@ internal class CloudFareVerificationInterceptor(
     @SuppressLint("SetJavaScriptEnabled")
     private suspend fun resolveWithWebView(
         request: Request,
-        cookieManager: CookieManager
+        cookieManager: CookieManager,
+        forceChallenge: Boolean = false
     ): Unit = withContext(Dispatchers.Default) {
         val url = request.url.toString()
         val domain = request.url.host
@@ -156,17 +161,21 @@ internal class CloudFareVerificationInterceptor(
         Log.d(TAG, "Starting Cloudflare challenge resolution for: $url")
         Log.d(TAG, "Domain: $domain")
 
-        // First, check if we already have a valid cf_clearance cookie
-        cookieManager.flush()
-        val existingCookies = cookieManager.getCookie(url) ?: ""
-        
-        if (existingCookies.contains("cf_clearance")) {
-            Log.d(TAG, "cf_clearance cookie already exists, no WebView needed")
-            return@withContext
+        // Check if we already have a valid cf_clearance cookie (unless forced)
+        if (!forceChallenge) {
+            cookieManager.flush()
+            val existingCookies = cookieManager.getCookie(url) ?: ""
+            
+            if (existingCookies.contains("cf_clearance")) {
+                Log.d(TAG, "cf_clearance cookie already exists, no WebView needed")
+                return@withContext
+            }
+        } else {
+            Log.d(TAG, "Forcing fresh challenge (existing cookie was invalid)")
         }
 
-        // Only launch WebView if we don't have the cookie
-        Log.d(TAG, "No cf_clearance cookie found, launching WebView for manual challenge")
+        // Launch WebView for manual challenge
+        Log.d(TAG, "Launching WebView for manual challenge")
         withContext(Dispatchers.Main) {
             val intent = Intent().apply {
                 setClassName(appContext, "my.noveldokusha.webview.WebViewActivity")
@@ -181,8 +190,19 @@ internal class CloudFareVerificationInterceptor(
         var attempts = 0
         var challengeSolved = false
         
+        // Store the initial cookie state to detect NEW cookies
+        cookieManager.flush()
+        val initialCookies = cookieManager.getCookie(url) ?: ""
+        val hadClearanceInitially = initialCookies.contains("cf_clearance")
+        
+        // If forcing challenge, we expect the cookie to change
+        val minWaitTime = if (forceChallenge && hadClearanceInitially) 3 else 1
+        
+        Log.d(TAG, "Waiting for challenge resolution (minWait=${minWaitTime}s, hadClearance=$hadClearanceInitially)")
+        
         while (!challengeSolved && attempts < maxAttempts) {
             delay(1.seconds)
+            attempts++
             
             // Flush cookies to ensure they're written
             cookieManager.flush()
@@ -195,11 +215,23 @@ internal class CloudFareVerificationInterceptor(
                 Log.d(TAG, "Attempt $attempts/$maxAttempts - Waiting for cf_clearance...")
             }
             
-            if (allCookies.contains("cf_clearance")) {
-                Log.d(TAG, "cf_clearance cookie found! Challenge solved after $attempts seconds.")
-                challengeSolved = true
+            // Only accept cookie after minimum wait time
+            // This prevents accepting old cookies that weren't properly cleared
+            if (attempts >= minWaitTime && allCookies.contains("cf_clearance")) {
+                // If we're forcing a challenge and had a cookie initially,
+                // verify the cookie value changed
+                if (forceChallenge && hadClearanceInitially) {
+                    if (allCookies != initialCookies) {
+                        Log.d(TAG, "cf_clearance cookie changed! Challenge solved after $attempts seconds.")
+                        challengeSolved = true
+                    } else {
+                        Log.d(TAG, "cf_clearance found but unchanged, continuing to wait...")
+                    }
+                } else {
+                    Log.d(TAG, "cf_clearance cookie found! Challenge solved after $attempts seconds.")
+                    challengeSolved = true
+                }
             }
-            attempts++
         }
         
         if (!challengeSolved) {

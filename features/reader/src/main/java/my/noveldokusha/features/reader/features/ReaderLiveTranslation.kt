@@ -13,6 +13,7 @@ import kotlinx.coroutines.flow.asSharedFlow
 import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import my.noveldokusha.core.appPreferences.AppPreferences
+import my.noveldokusha.feature.local_database.DAOs.ChapterTranslationDao
 import my.noveldokusha.text_translator.domain.TranslationManager
 import my.noveldokusha.text_translator.domain.TranslationModelState
 import my.noveldokusha.text_translator.domain.TranslatorState
@@ -33,6 +34,7 @@ internal data class LiveTranslationSettingData(
 internal class ReaderLiveTranslation(
     private val translationManager: TranslationManager,
     private val appPreferences: AppPreferences,
+    private val chapterTranslationDao: ChapterTranslationDao? = null,
     private val scope: CoroutineScope = CoroutineScope(
         SupervisorJob() + Dispatchers.Default + CoroutineName("LiveTranslator")
     )
@@ -196,7 +198,7 @@ internal class ReaderLiveTranslation(
 
                 Log.d(TAG, "onRedoTranslation: invalidating cache for source=$source, target=$target")
                 
-                // Call invalidateCacheFor via reflection
+                // 1. Clear in-memory cache using reflection (for Gemini)
                 val methods = translationManager.javaClass.methods
                 val method = methods.find { it.name == "invalidateCacheFor" }
                 
@@ -213,9 +215,30 @@ internal class ReaderLiveTranslation(
                     Log.w(TAG, "onRedoTranslation: invalidateCacheFor method not found on ${translationManager.javaClass.simpleName}")
                 }
 
-                // Notify listeners to recreate translator / re-run translations
-                Log.d(TAG, "onRedoTranslation: emitting translator changed event")
-                _onTranslatorChanged.emit(Unit)
+                // 2. Clear database cache
+                chapterTranslationDao?.let { dao ->
+                    try {
+                        Log.d(TAG, "onRedoTranslation: clearing database cache for language pair")
+                        val deletedCount = withContext(Dispatchers.IO) {
+                            dao.deleteTranslationsByLanguagePair(source, target)
+                        }
+                        Log.d(TAG, "onRedoTranslation: database cache cleared successfully (deleted $deletedCount translations)")
+                    } catch (e: Exception) {
+                        Log.e(TAG, "onRedoTranslation: failed to clear database cache", e)
+                    }
+                } ?: Log.w(TAG, "onRedoTranslation: chapterTranslationDao is null, skipping database clear")
+
+                // 3. Force recreate translator state to trigger full reload
+                // This mimics what happens when user changes source/target language
+                Log.d(TAG, "onRedoTranslation: forcing translator state update")
+                translatorState = null
+                val update = updateTranslatorState()
+                Log.d(TAG, "onRedoTranslation: translator state updated, triggering reload")
+                
+                // Emit change event to trigger reader reload (same as language change)
+                if (update) {
+                    _onTranslatorChanged.emit(Unit)
+                }
                 Log.d(TAG, "onRedoTranslation: complete")
             } catch (e: Exception) {
                 Log.e(TAG, "onRedoTranslation: error", e)

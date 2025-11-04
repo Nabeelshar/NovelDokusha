@@ -101,7 +101,8 @@ internal class ReaderSession(
 
     val readerLiveTranslation = ReaderLiveTranslation(
         translationManager = translationManager,
-        appPreferences = appPreferences
+        appPreferences = appPreferences,
+        chapterTranslationDao = chapterTranslationDao
     )
 
     val readerChaptersLoader = ReaderChaptersLoader(
@@ -310,6 +311,13 @@ internal class ReaderSession(
 
     fun markChapterEndAsSeen(chapterUrl: String) {
         readRoutine.setReadEnd(chapterUrl = chapterUrl)
+    }
+
+    fun saveCurrentPosition(currentChapter: ChapterState) {
+        readerRepository.saveBookLastReadPositionState(
+            bookUrl = bookUrl,
+            newChapter = currentChapter
+        )
     }
 
     private fun saveLastReadPositionStateSpeaker(item: ReaderItem.Position) {

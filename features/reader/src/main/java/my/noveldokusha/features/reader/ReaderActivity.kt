@@ -529,6 +529,8 @@ class ReaderActivity : BaseActivity() {
                 viewBind.listView.firstVisiblePosition
             )
         )
+        // Explicitly save to database when app pauses
+        viewModel.saveCurrentReadingPosition()
         super.onPause()
     }
 

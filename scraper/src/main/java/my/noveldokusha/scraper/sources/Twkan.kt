@@ -129,6 +129,49 @@ class Twkan(
             if (input.isBlank())
                 return@tryConnect PagedList.createEmpty(index = index)
 
+            // Check if input is a direct URL to this source
+            if (input.startsWith("http") && input.contains("twkan.com")) {
+                // Extract book info from the URL directly
+                val bookUrl = if (input.contains("/book/")) {
+                    input
+                } else {
+                    // Try to handle chapter URLs by extracting book ID
+                    val bookId = input.substringAfter("/txt/").substringBefore("/")
+                    "https://twkan.com/book/$bookId.html"
+                }
+                
+                // Fetch the book page to get title and cover using UTF-8 charset
+                val doc = networkClient.get(bookUrl).toDocument("UTF-8")
+                
+                // Try multiple selectors to find the title
+                val title = doc.selectFirst(".bookinfo h1")?.text()?.trim()
+                    ?: doc.selectFirst(".bookimg2 img[alt]")?.attr("alt")?.trim()
+                    ?: doc.selectFirst("h1")?.text()?.trim()
+                    ?: doc.selectFirst(".bookinfo h2")?.text()?.trim()
+                    ?: doc.selectFirst("meta[property=og:title]")?.attr("content")?.trim()
+                    ?: "Unknown Novel"
+                
+                val coverImg = doc.selectFirst(".bookimg2 img[src]")?.attr("src")
+                    ?: doc.selectFirst("img[alt]")?.attr("src")
+                    ?: ""
+                
+                return@tryConnect PagedList(
+                    list = listOf(
+                        BookResult(
+                            title = title,
+                            url = bookUrl,
+                            coverImageUrl = when {
+                                coverImg.startsWith("http") -> coverImg
+                                coverImg.startsWith("/") -> URI(baseUrl).resolve(coverImg).toString()
+                                else -> ""
+                            }
+                        )
+                    ),
+                    index = index,
+                    isLastPage = true
+                )
+            }
+
             // Search URL pattern: /search/{encoded_query}/{page}.html
             val encodedQuery = java.net.URLEncoder.encode(input, "UTF-8")
             val page = index + 1

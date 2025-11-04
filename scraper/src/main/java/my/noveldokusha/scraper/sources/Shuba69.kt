@@ -122,6 +122,44 @@ class Shuba69(
             if (input.isBlank() || index > 0)
                 return@tryConnect PagedList.createEmpty(index = index)
 
+            // Check if input is a direct URL to this source
+            if (input.startsWith("http") && (input.contains("69shuba.com") || input.contains("www.69shu.com"))) {
+                // Extract book info from the URL directly
+                // Convert /book/ URL to /txt/ format for proper book page
+                val bookUrl = if (input.contains("/book/")) {
+                    input.replace("/book/", "/txt/")
+                } else {
+                    input
+                }
+                
+                // Fetch the book page to get title and cover using GBK charset
+                val doc = networkClient.get(bookUrl).toDocument(charset)
+                
+                // Try multiple selectors to find the title
+                val title = doc.selectFirst("div.bookinfo h1")?.text()?.trim()
+                    ?: doc.selectFirst("div.bookimg2 img")?.attr("alt")?.trim()
+                    ?: doc.selectFirst("h1")?.text()?.trim()
+                    ?: doc.selectFirst("div.bookinfo h2")?.text()?.trim()
+                    ?: doc.selectFirst("meta[property=og:title]")?.attr("content")?.trim()
+                    ?: "Unknown Novel"
+                
+                val coverImg = doc.selectFirst("div.bookimg2 img")?.attr("src") 
+                    ?: doc.selectFirst("img[alt]")?.attr("src")
+                    ?: ""
+                
+                return@tryConnect PagedList(
+                    list = listOf(
+                        BookResult(
+                            title = title,
+                            url = bookUrl,
+                            coverImageUrl = if (coverImg.startsWith("http")) coverImg else URI(baseUrl).resolve(coverImg).toString()
+                        )
+                    ),
+                    index = index,
+                    isLastPage = true
+                )
+            }
+
             // Search using POST request with GBK encoding
             val searchUrl = "https://www.69shuba.com/modules/article/search.php"
             val encodedQuery = URLEncoder.encode(input, "GBK")
