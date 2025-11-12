@@ -46,7 +46,7 @@ android {
         applicationId = "my.noveldokusha"
         versionCode = 24
         versionName = "2.3.5"
-        setProperty("archivesBaseName", "NovelDokusha_v$versionName")
+        setProperty("archivesBaseName", "WebnovelReader_v$versionName")
     }
 
     signingConfigs {
