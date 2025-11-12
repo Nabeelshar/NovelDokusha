@@ -106,7 +106,7 @@ class TranslationManagerGemini(
         
         if (availableKeys.isEmpty()) {
             Log.e(TAG, "translateWithGemini: No API keys configured!")
-            throw IllegalStateException("Gemini API key not configured")
+            return@withContext "[Translation unavailable: Gemini API key not configured. Please add your API key in Settings → Gemini Translation]"
         }
 
         val sourceLocale = Locale(sourceLanguage)
