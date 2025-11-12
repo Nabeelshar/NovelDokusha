@@ -71,15 +71,18 @@ internal fun SettingsGeminiTranslation(
                             apiKeyText = it
                             onGeminiApiKeyChange(it)
                         },
-                        label = { Text("Enter your Gemini API key") },
+                        label = { Text("Enter your Gemini API key(s)") },
                         placeholder = { Text("AIzaSy...") },
                         visualTransformation = PasswordVisualTransformation(),
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = true
+                        singleLine = false,
+                        minLines = 1,
+                        maxLines = 5
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
-                        text = "Get your free API key at: ai.google.dev",
+                        text = "Get your free API key at: ai.google.dev\n" +
+                               "Tip: Enter multiple API keys (one per line or separated by semicolon) to avoid rate limits",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

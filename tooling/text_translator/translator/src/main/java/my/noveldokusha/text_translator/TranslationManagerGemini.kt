@@ -110,7 +110,11 @@ class TranslationManagerGemini(
         val targetLangName = targetLocale.displayLanguage
 
         val prompt = """
-            Translate the following text from $sourceLangName to $targetLangName.
+            Translate the following webnovel chapter text from $sourceLangName to $targetLangName.
+            Translate all Pinyin, honorifics, and names appropriately.
+            I want target language that reads naturally to native speakers.(e.g., Heaven instead of Tian)
+            Remove any advertisements or promotional content.
+            Translate like wuixaworld Expert Translator.
             Only provide the translation, without any explanations or additional text.
             
             Text to translate:

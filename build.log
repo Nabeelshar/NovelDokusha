@@ -1,0 +1,879 @@
+Starting a Gradle Daemon, 1 busy Daemon could not be reused, use --status for details
+Calculating task graph as configuration cache cannot be reused because file 'app\build.gradle.kts' has changed.
+The RepositoryHandler.jcenter() method has been deprecated. This is scheduled to be removed in Gradle 9.0. JFrog announced JCenter's sunset in February 2021. Use mavenCentral() instead. Consult the upgrading guide for further information: https://docs.gradle.org/8.13/userguide/upgrading_version_6.html#jcenter_deprecation
+	at Settings_gradle$1$1.execute(settings.gradle.kts:16)
+	(Run with --stacktrace to get the full stack trace of this deprecation warning.)
+Type-safe project accessors is an incubating feature.
+
+> Configure project :
+The RepositoryHandler.jcenter() method has been deprecated. This is scheduled to be removed in Gradle 9.0. JFrog announced JCenter's sunset in February 2021. Use mavenCentral() instead. Consult the upgrading guide for further information: https://docs.gradle.org/8.13/userguide/upgrading_version_6.html#jcenter_deprecation
+	at Build_gradle$1$1.invoke(build.gradle.kts:6)
+	(Run with --stacktrace to get the full stack trace of this deprecation warning.)
+
+> Task :build-logic:convention:checkKotlinGradlePluginConfigurationErrors SKIPPED
+> Task :build-logic:convention:compileKotlin UP-TO-DATE
+> Task :build-logic:convention:compileJava NO-SOURCE
+> Task :build-logic:convention:pluginDescriptors UP-TO-DATE
+> Task :build-logic:convention:processResources UP-TO-DATE
+> Task :build-logic:convention:classes UP-TO-DATE
+> Task :build-logic:convention:jar UP-TO-DATE
+
+> Configure project :app
+localPropertiesFilePath: local.properties
+hasDefaultSigningConfigData: false
+The org.gradle.api.plugins.BasePluginConvention type has been deprecated. This is scheduled to be removed in Gradle 9.0. Consult the upgrading guide for further information: https://docs.gradle.org/8.13/userguide/upgrading_version_8.html#base_convention_deprecation
+	at Build_gradle$1$2.invoke(build.gradle.kts:49)
+	(Run with --stacktrace to get the full stack trace of this deprecation warning.)
+	at Build_gradle$1.execute(build.gradle.kts:26)
+	(Run with --stacktrace to get the full stack trace of this deprecation warning.)
+The BasePluginExtension.archivesBaseName property has been deprecated. This is scheduled to be removed in Gradle 9.0. Please use the archivesName property instead. For more information, please refer to https://docs.gradle.org/8.13/dsl/org.gradle.api.plugins.BasePluginExtension.html#org.gradle.api.plugins.BasePluginExtension:archivesName in the Gradle documentation.
+	at Build_gradle$1$2.invoke(build.gradle.kts:49)
+	(Run with --stacktrace to get the full stack trace of this deprecation warning.)
+
+> Task :scraper:preBuild UP-TO-DATE
+> Task :networking:preBuild UP-TO-DATE
+> Task :strings:preBuild UP-TO-DATE
+> Task :features:catalogExplorer:preBuild UP-TO-DATE
+> Task :app:preBuild UP-TO-DATE
+> Task :features:databaseExplorer:preBuild UP-TO-DATE
+> Task :coreui:preBuild UP-TO-DATE
+> Task :core:preBuild UP-TO-DATE
+> Task :features:chaptersList:preBuild UP-TO-DATE
+> Task :core:preDebugBuild UP-TO-DATE
+> Task :navigation:preBuild UP-TO-DATE
+> Task :data:preBuild UP-TO-DATE
+> Task :navigation:preDebugBuild UP-TO-DATE
+> Task :features:catalogExplorer:preDebugBuild UP-TO-DATE
+> Task :coreui:preDebugBuild UP-TO-DATE
+> Task :scraper:preDebugBuild UP-TO-DATE
+> Task :data:preDebugBuild UP-TO-DATE
+> Task :strings:preDebugBuild UP-TO-DATE
+> Task :networking:preDebugBuild UP-TO-DATE
+> Task :app:preFossDebugBuild UP-TO-DATE
+> Task :features:chaptersList:preDebugBuild UP-TO-DATE
+> Task :features:databaseExplorer:preDebugBuild UP-TO-DATE
+> Task :networking:generateDebugResValues UP-TO-DATE
+> Task :features:catalogExplorer:generateDebugResValues UP-TO-DATE
+> Task :scraper:generateDebugResValues UP-TO-DATE
+> Task :data:generateDebugResValues UP-TO-DATE
+> Task :core:generateDebugResValues UP-TO-DATE
+> Task :navigation:generateDebugResValues UP-TO-DATE
+> Task :strings:generateDebugResValues UP-TO-DATE
+> Task :app:mergeFossDebugNativeDebugMetadata NO-SOURCE
+> Task :app:checkKotlinGradlePluginConfigurationErrors
+> Task :coreui:generateDebugResValues UP-TO-DATE
+> Task :networking:generateDebugResources UP-TO-DATE
+> Task :features:catalogExplorer:generateDebugResources UP-TO-DATE
+> Task :data:generateDebugResources UP-TO-DATE
+> Task :scraper:generateDebugResources UP-TO-DATE
+> Task :app:generateFossDebugResValues UP-TO-DATE
+> Task :navigation:generateDebugResources UP-TO-DATE
+> Task :features:databaseExplorer:generateDebugResValues UP-TO-DATE
+> Task :core:generateDebugResources UP-TO-DATE
+> Task :features:chaptersList:generateDebugResValues UP-TO-DATE
+> Task :app:generateFossDebugResources UP-TO-DATE
+> Task :strings:generateDebugResources UP-TO-DATE
+> Task :features:globalSourceSearch:preBuild UP-TO-DATE
+> Task :features:globalSourceSearch:preDebugBuild UP-TO-DATE
+> Task :features:chaptersList:generateDebugResources UP-TO-DATE
+> Task :features:databaseExplorer:generateDebugResources UP-TO-DATE
+> Task :features:globalSourceSearch:generateDebugResValues UP-TO-DATE
+> Task :features:libraryExplorer:preBuild UP-TO-DATE
+> Task :features:libraryExplorer:preDebugBuild UP-TO-DATE
+> Task :features:catalogExplorer:packageDebugResources UP-TO-DATE
+> Task :data:packageDebugResources UP-TO-DATE
+> Task :navigation:packageDebugResources UP-TO-DATE
+> Task :networking:packageDebugResources UP-TO-DATE
+> Task :core:packageDebugResources UP-TO-DATE
+> Task :scraper:packageDebugResources UP-TO-DATE
+> Task :features:reader:preBuild UP-TO-DATE
+> Task :features:settings:preBuild UP-TO-DATE
+> Task :features:reader:preDebugBuild UP-TO-DATE
+> Task :features:libraryExplorer:generateDebugResValues UP-TO-DATE
+> Task :features:webview:preBuild UP-TO-DATE
+> Task :features:sourceExplorer:preBuild UP-TO-DATE
+> Task :features:sourceExplorer:preDebugBuild UP-TO-DATE
+> Task :tooling:algorithms:preBuild UP-TO-DATE
+> Task :features:webview:preDebugBuild UP-TO-DATE
+> Task :features:globalSourceSearch:generateDebugResources UP-TO-DATE
+> Task :features:settings:preDebugBuild UP-TO-DATE
+> Task :tooling:algorithms:preDebugBuild UP-TO-DATE
+> Task :features:sourceExplorer:generateDebugResValues UP-TO-DATE
+> Task :features:libraryExplorer:generateDebugResources UP-TO-DATE
+> Task :features:reader:generateDebugResValues UP-TO-DATE
+> Task :features:settings:generateDebugResValues UP-TO-DATE
+> Task :tooling:algorithms:generateDebugResValues UP-TO-DATE
+> Task :features:webview:generateDebugResValues UP-TO-DATE
+> Task :features:sourceExplorer:generateDebugResources UP-TO-DATE
+> Task :features:databaseExplorer:packageDebugResources UP-TO-DATE
+> Task :tooling:algorithms:generateDebugResources UP-TO-DATE
+> Task :strings:packageDebugResources UP-TO-DATE
+> Task :features:settings:generateDebugResources UP-TO-DATE
+> Task :features:chaptersList:packageDebugResources UP-TO-DATE
+> Task :tooling:backup_create:preBuild UP-TO-DATE
+> Task :tooling:application_workers:preBuild UP-TO-DATE
+> Task :tooling:application_workers:preDebugBuild UP-TO-DATE
+> Task :tooling:application_workers:generateDebugResValues UP-TO-DATE
+> Task :tooling:backup_create:preDebugBuild UP-TO-DATE
+> Task :features:webview:generateDebugResources UP-TO-DATE
+> Task :features:globalSourceSearch:packageDebugResources UP-TO-DATE
+> Task :features:libraryExplorer:packageDebugResources UP-TO-DATE
+> Task :tooling:epub_importer:preBuild UP-TO-DATE
+> Task :tooling:application_workers:generateDebugResources UP-TO-DATE
+> Task :features:reader:generateDebugResources UP-TO-DATE
+> Task :tooling:epub_parser:preBuild UP-TO-DATE
+> Task :tooling:epub_importer:preDebugBuild UP-TO-DATE
+> Task :tooling:backup_create:generateDebugResValues UP-TO-DATE
+> Task :features:sourceExplorer:packageDebugResources UP-TO-DATE
+> Task :features:settings:packageDebugResources UP-TO-DATE
+> Task :tooling:epub_parser:preDebugBuild UP-TO-DATE
+> Task :tooling:local_database:preBuild UP-TO-DATE
+> Task :tooling:local_source:preBuild UP-TO-DATE
+> Task :tooling:backup_restore:preBuild UP-TO-DATE
+> Task :tooling:local_source:preDebugBuild UP-TO-DATE
+> Task :tooling:backup_create:generateDebugResources UP-TO-DATE
+> Task :tooling:epub_importer:generateDebugResValues UP-TO-DATE
+> Task :tooling:backup_restore:preDebugBuild UP-TO-DATE
+> Task :tooling:local_database:preDebugBuild UP-TO-DATE
+> Task :tooling:epub_parser:generateDebugResValues UP-TO-DATE
+> Task :tooling:local_source:generateDebugResValues UP-TO-DATE
+> Task :tooling:local_database:generateDebugResValues UP-TO-DATE
+> Task :tooling:backup_restore:generateDebugResValues UP-TO-DATE
+> Task :tooling:application_workers:packageDebugResources UP-TO-DATE
+> Task :tooling:text_to_speech:preBuild UP-TO-DATE
+> Task :tooling:text_to_speech:preDebugBuild UP-TO-DATE
+> Task :tooling:local_database:generateDebugResources UP-TO-DATE
+> Task :tooling:epub_parser:generateDebugResources UP-TO-DATE
+> Task :tooling:local_source:generateDebugResources UP-TO-DATE
+> Task :tooling:text_to_speech:generateDebugResValues UP-TO-DATE
+> Task :tooling:algorithms:packageDebugResources UP-TO-DATE
+> Task :tooling:text_translator:domain:preBuild UP-TO-DATE
+> Task :tooling:text_translator:domain:preDebugBuild UP-TO-DATE
+> Task :tooling:backup_restore:generateDebugResources UP-TO-DATE
+> Task :tooling:text_to_speech:generateDebugResources UP-TO-DATE
+> Task :features:webview:packageDebugResources UP-TO-DATE
+> Task :tooling:text_translator:domain:generateDebugResValues UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:preBuild UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:preDebugBuild UP-TO-DATE
+> Task :tooling:local_source:packageDebugResources UP-TO-DATE
+> Task :tooling:local_database:packageDebugResources UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:generateDebugResValues UP-TO-DATE
+> Task :tooling:backup_create:packageDebugResources UP-TO-DATE
+> Task :tooling:text_translator:domain:generateDebugResources UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:generateDebugResources UP-TO-DATE
+> Task :app:generateFossDebugBuildConfig UP-TO-DATE
+> Task :core:writeDebugAarMetadata UP-TO-DATE
+> Task :tooling:epub_parser:packageDebugResources UP-TO-DATE
+> Task :tooling:text_to_speech:packageDebugResources UP-TO-DATE
+> Task :features:reader:packageDebugResources UP-TO-DATE
+> Task :tooling:backup_restore:packageDebugResources UP-TO-DATE
+> Task :coreui:writeDebugAarMetadata UP-TO-DATE
+> Task :data:writeDebugAarMetadata UP-TO-DATE
+> Task :networking:writeDebugAarMetadata UP-TO-DATE
+> Task :navigation:writeDebugAarMetadata UP-TO-DATE
+> Task :tooling:text_translator:domain:packageDebugResources UP-TO-DATE
+> Task :scraper:writeDebugAarMetadata UP-TO-DATE
+> Task :strings:writeDebugAarMetadata UP-TO-DATE
+> Task :features:databaseExplorer:writeDebugAarMetadata UP-TO-DATE
+> Task :features:globalSourceSearch:writeDebugAarMetadata UP-TO-DATE
+> Task :features:catalogExplorer:writeDebugAarMetadata UP-TO-DATE
+> Task :features:chaptersList:writeDebugAarMetadata UP-TO-DATE
+> Task :features:libraryExplorer:writeDebugAarMetadata UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:packageDebugResources UP-TO-DATE
+> Task :features:reader:writeDebugAarMetadata UP-TO-DATE
+> Task :features:settings:writeDebugAarMetadata UP-TO-DATE
+> Task :features:sourceExplorer:writeDebugAarMetadata UP-TO-DATE
+> Task :features:webview:writeDebugAarMetadata UP-TO-DATE
+> Task :tooling:backup_create:writeDebugAarMetadata UP-TO-DATE
+> Task :tooling:algorithms:writeDebugAarMetadata UP-TO-DATE
+> Task :tooling:application_workers:writeDebugAarMetadata UP-TO-DATE
+> Task :tooling:backup_restore:writeDebugAarMetadata UP-TO-DATE
+> Task :tooling:epub_importer:writeDebugAarMetadata UP-TO-DATE
+> Task :tooling:local_source:writeDebugAarMetadata UP-TO-DATE
+> Task :tooling:text_to_speech:writeDebugAarMetadata UP-TO-DATE
+> Task :tooling:text_translator:domain:writeDebugAarMetadata UP-TO-DATE
+> Task :tooling:epub_parser:writeDebugAarMetadata UP-TO-DATE
+> Task :tooling:local_database:writeDebugAarMetadata UP-TO-DATE
+> Task :core:extractDeepLinksDebug UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:writeDebugAarMetadata UP-TO-DATE
+> Task :app:extractDeepLinksFossDebug UP-TO-DATE
+> Task :app:createFossDebugCompatibleScreenManifests UP-TO-DATE
+> Task :tooling:epub_importer:generateDebugResources UP-TO-DATE
+> Task :coreui:generateDebugResources UP-TO-DATE
+> Task :data:extractDeepLinksDebug UP-TO-DATE
+> Task :navigation:extractDeepLinksDebug UP-TO-DATE
+> Task :coreui:extractDeepLinksDebug UP-TO-DATE
+> Task :networking:extractDeepLinksDebug UP-TO-DATE
+> Task :scraper:extractDeepLinksDebug UP-TO-DATE
+> Task :core:processDebugManifest UP-TO-DATE
+> Task :tooling:epub_importer:packageDebugResources UP-TO-DATE
+> Task :coreui:processDebugManifest UP-TO-DATE
+> Task :features:catalogExplorer:extractDeepLinksDebug UP-TO-DATE
+> Task :strings:extractDeepLinksDebug UP-TO-DATE
+> Task :data:processDebugManifest UP-TO-DATE
+> Task :navigation:processDebugManifest UP-TO-DATE
+> Task :networking:processDebugManifest UP-TO-DATE
+> Task :features:chaptersList:extractDeepLinksDebug UP-TO-DATE
+> Task :strings:processDebugManifest UP-TO-DATE
+> Task :features:databaseExplorer:extractDeepLinksDebug UP-TO-DATE
+> Task :scraper:processDebugManifest UP-TO-DATE
+> Task :features:globalSourceSearch:extractDeepLinksDebug UP-TO-DATE
+> Task :features:libraryExplorer:extractDeepLinksDebug UP-TO-DATE
+> Task :features:catalogExplorer:processDebugManifest UP-TO-DATE
+> Task :features:reader:extractDeepLinksDebug UP-TO-DATE
+> Task :features:settings:extractDeepLinksDebug UP-TO-DATE
+> Task :features:databaseExplorer:processDebugManifest UP-TO-DATE
+> Task :features:globalSourceSearch:processDebugManifest UP-TO-DATE
+> Task :features:sourceExplorer:extractDeepLinksDebug UP-TO-DATE
+> Task :features:chaptersList:processDebugManifest UP-TO-DATE
+> Task :features:reader:processDebugManifest UP-TO-DATE
+> Task :features:webview:extractDeepLinksDebug UP-TO-DATE
+> Task :tooling:application_workers:extractDeepLinksDebug UP-TO-DATE
+> Task :features:settings:processDebugManifest UP-TO-DATE
+> Task :features:webview:processDebugManifest UP-TO-DATE
+> Task :features:sourceExplorer:processDebugManifest UP-TO-DATE
+> Task :tooling:backup_create:extractDeepLinksDebug UP-TO-DATE
+> Task :tooling:backup_restore:extractDeepLinksDebug UP-TO-DATE
+> Task :tooling:backup_create:processDebugManifest UP-TO-DATE
+> Task :tooling:algorithms:extractDeepLinksDebug UP-TO-DATE
+> Task :tooling:epub_parser:extractDeepLinksDebug UP-TO-DATE
+> Task :tooling:epub_importer:processDebugManifest UP-TO-DATE
+> Task :tooling:local_database:extractDeepLinksDebug UP-TO-DATE
+> Task :tooling:local_source:extractDeepLinksDebug UP-TO-DATE
+> Task :tooling:epub_parser:processDebugManifest UP-TO-DATE
+> Task :tooling:local_database:processDebugManifest UP-TO-DATE
+> Task :tooling:application_workers:processDebugManifest UP-TO-DATE
+> Task :coreui:packageDebugResources UP-TO-DATE
+> Task :tooling:text_to_speech:extractDeepLinksDebug UP-TO-DATE
+> Task :tooling:text_translator:domain:extractDeepLinksDebug UP-TO-DATE
+> Task :tooling:local_source:processDebugManifest UP-TO-DATE
+> Task :tooling:text_to_speech:processDebugManifest UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:extractDeepLinksDebug UP-TO-DATE
+> Task :core:compileDebugLibraryResources UP-TO-DATE
+> Task :tooling:text_translator:domain:processDebugManifest UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:processDebugManifest UP-TO-DATE
+> Task :strings:parseDebugLocalResources UP-TO-DATE
+> Task :core:parseDebugLocalResources UP-TO-DATE
+> Task :coreui:parseDebugLocalResources UP-TO-DATE
+> Task :tooling:local_database:parseDebugLocalResources UP-TO-DATE
+> Task :data:compileDebugLibraryResources UP-TO-DATE
+> Task :data:parseDebugLocalResources UP-TO-DATE
+> Task :networking:parseDebugLocalResources UP-TO-DATE
+> Task :coreui:compileDebugLibraryResources UP-TO-DATE
+> Task :scraper:parseDebugLocalResources UP-TO-DATE
+> Task :tooling:epub_parser:parseDebugLocalResources UP-TO-DATE
+> Task :navigation:parseDebugLocalResources UP-TO-DATE
+> Task :navigation:compileDebugLibraryResources UP-TO-DATE
+> Task :networking:compileDebugLibraryResources UP-TO-DATE
+> Task :scraper:compileDebugLibraryResources UP-TO-DATE
+> Task :strings:compileDebugLibraryResources UP-TO-DATE
+> Task :features:catalogExplorer:compileDebugLibraryResources UP-TO-DATE
+> Task :features:catalogExplorer:parseDebugLocalResources UP-TO-DATE
+> Task :features:chaptersList:compileDebugLibraryResources UP-TO-DATE
+> Task :features:chaptersList:parseDebugLocalResources UP-TO-DATE
+> Task :features:databaseExplorer:compileDebugLibraryResources UP-TO-DATE
+> Task :features:globalSourceSearch:compileDebugLibraryResources UP-TO-DATE
+> Task :features:databaseExplorer:parseDebugLocalResources UP-TO-DATE
+> Task :features:globalSourceSearch:parseDebugLocalResources UP-TO-DATE
+> Task :features:libraryExplorer:compileDebugLibraryResources UP-TO-DATE
+> Task :features:libraryExplorer:parseDebugLocalResources UP-TO-DATE
+> Task :tooling:epub_importer:parseDebugLocalResources UP-TO-DATE
+> Task :features:reader:compileDebugLibraryResources UP-TO-DATE
+> Task :features:reader:parseDebugLocalResources UP-TO-DATE
+> Task :tooling:algorithms:parseDebugLocalResources UP-TO-DATE
+> Task :features:libraryExplorer:processDebugManifest UP-TO-DATE
+> Task :tooling:algorithms:processDebugManifest UP-TO-DATE
+> Task :tooling:epub_importer:extractDeepLinksDebug UP-TO-DATE
+> Task :tooling:backup_restore:processDebugManifest UP-TO-DATE
+> Task :tooling:text_to_speech:parseDebugLocalResources UP-TO-DATE
+> Task :features:settings:compileDebugLibraryResources UP-TO-DATE
+> Task :tooling:text_translator:domain:parseDebugLocalResources UP-TO-DATE
+> Task :features:settings:parseDebugLocalResources UP-TO-DATE
+> Task :tooling:backup_restore:parseDebugLocalResources UP-TO-DATE
+> Task :features:sourceExplorer:compileDebugLibraryResources UP-TO-DATE
+> Task :features:sourceExplorer:parseDebugLocalResources UP-TO-DATE
+> Task :features:webview:compileDebugLibraryResources UP-TO-DATE
+> Task :features:webview:parseDebugLocalResources UP-TO-DATE
+> Task :tooling:backup_create:parseDebugLocalResources UP-TO-DATE
+> Task :tooling:algorithms:compileDebugLibraryResources UP-TO-DATE
+> Task :tooling:application_workers:compileDebugLibraryResources UP-TO-DATE
+> Task :tooling:application_workers:parseDebugLocalResources UP-TO-DATE
+> Task :tooling:backup_create:compileDebugLibraryResources UP-TO-DATE
+> Task :tooling:backup_restore:compileDebugLibraryResources UP-TO-DATE
+> Task :tooling:epub_parser:compileDebugLibraryResources UP-TO-DATE
+> Task :tooling:local_database:compileDebugLibraryResources UP-TO-DATE
+> Task :tooling:local_source:compileDebugLibraryResources UP-TO-DATE
+> Task :tooling:local_source:parseDebugLocalResources UP-TO-DATE
+> Task :tooling:text_to_speech:compileDebugLibraryResources UP-TO-DATE
+> Task :tooling:text_translator:domain:compileDebugLibraryResources UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:compileDebugLibraryResources UP-TO-DATE
+> Task :core:checkKotlinGradlePluginConfigurationErrors
+> Task :tooling:text_translator:translator_nop:parseDebugLocalResources UP-TO-DATE
+> Task :strings:checkKotlinGradlePluginConfigurationErrors
+> Task :core:generateDebugBuildConfig UP-TO-DATE
+> Task :strings:generateDebugBuildConfig UP-TO-DATE
+> Task :core:javaPreCompileDebug UP-TO-DATE
+> Task :strings:javaPreCompileDebug UP-TO-DATE
+> Task :coreui:checkKotlinGradlePluginConfigurationErrors
+> Task :coreui:generateDebugBuildConfig UP-TO-DATE
+> Task :tooling:local_database:checkKotlinGradlePluginConfigurationErrors
+> Task :tooling:local_database:generateDebugBuildConfig UP-TO-DATE
+> Task :coreui:javaPreCompileDebug UP-TO-DATE
+> Task :tooling:local_database:javaPreCompileDebug UP-TO-DATE
+> Task :data:checkKotlinGradlePluginConfigurationErrors
+> Task :data:generateDebugBuildConfig UP-TO-DATE
+> Task :networking:checkKotlinGradlePluginConfigurationErrors
+> Task :networking:generateDebugBuildConfig UP-TO-DATE
+> Task :networking:javaPreCompileDebug UP-TO-DATE
+> Task :scraper:checkKotlinGradlePluginConfigurationErrors
+> Task :scraper:generateDebugBuildConfig UP-TO-DATE
+> Task :scraper:javaPreCompileDebug UP-TO-DATE
+> Task :tooling:epub_parser:checkKotlinGradlePluginConfigurationErrors
+> Task :tooling:epub_parser:javaPreCompileDebug UP-TO-DATE
+> Task :tooling:epub_parser:generateDebugBuildConfig UP-TO-DATE
+> Task :data:javaPreCompileDebug UP-TO-DATE
+> Task :navigation:checkKotlinGradlePluginConfigurationErrors
+> Task :navigation:generateDebugBuildConfig UP-TO-DATE
+> Task :features:catalogExplorer:checkKotlinGradlePluginConfigurationErrors
+> Task :navigation:javaPreCompileDebug UP-TO-DATE
+> Task :features:catalogExplorer:generateDebugBuildConfig UP-TO-DATE
+> Task :features:chaptersList:checkKotlinGradlePluginConfigurationErrors
+> Task :features:catalogExplorer:javaPreCompileDebug UP-TO-DATE
+> Task :features:chaptersList:generateDebugBuildConfig UP-TO-DATE
+> Task :features:databaseExplorer:checkKotlinGradlePluginConfigurationErrors
+> Task :features:databaseExplorer:generateDebugBuildConfig UP-TO-DATE
+> Task :features:chaptersList:javaPreCompileDebug UP-TO-DATE
+> Task :features:globalSourceSearch:checkKotlinGradlePluginConfigurationErrors
+> Task :features:databaseExplorer:javaPreCompileDebug UP-TO-DATE
+> Task :features:globalSourceSearch:generateDebugBuildConfig UP-TO-DATE
+> Task :features:globalSourceSearch:javaPreCompileDebug UP-TO-DATE
+> Task :features:libraryExplorer:checkKotlinGradlePluginConfigurationErrors
+> Task :tooling:epub_importer:compileDebugLibraryResources UP-TO-DATE
+> Task :features:libraryExplorer:generateDebugBuildConfig UP-TO-DATE
+> Task :tooling:epub_importer:checkKotlinGradlePluginConfigurationErrors
+> Task :tooling:text_translator:domain:checkKotlinGradlePluginConfigurationErrors
+> Task :tooling:epub_importer:javaPreCompileDebug UP-TO-DATE
+> Task :tooling:text_translator:domain:generateDebugBuildConfig UP-TO-DATE
+> Task :tooling:epub_importer:generateDebugBuildConfig UP-TO-DATE
+> Task :features:libraryExplorer:javaPreCompileDebug UP-TO-DATE
+> Task :tooling:text_translator:domain:javaPreCompileDebug UP-TO-DATE
+> Task :tooling:algorithms:checkKotlinGradlePluginConfigurationErrors
+> Task :features:reader:generateDebugBuildConfig UP-TO-DATE
+> Task :features:reader:checkKotlinGradlePluginConfigurationErrors
+> Task :tooling:algorithms:generateDebugBuildConfig UP-TO-DATE
+> Task :tooling:algorithms:javaPreCompileDebug UP-TO-DATE
+> Task :tooling:text_to_speech:checkKotlinGradlePluginConfigurationErrors
+> Task :tooling:text_to_speech:javaPreCompileDebug UP-TO-DATE
+> Task :tooling:text_to_speech:generateDebugBuildConfig UP-TO-DATE
+> Task :features:settings:checkKotlinGradlePluginConfigurationErrors
+> Task :tooling:backup_create:checkKotlinGradlePluginConfigurationErrors
+> Task :features:reader:javaPreCompileDebug UP-TO-DATE
+> Task :tooling:backup_create:generateDebugBuildConfig UP-TO-DATE
+> Task :tooling:backup_restore:checkKotlinGradlePluginConfigurationErrors
+> Task :features:settings:generateDebugBuildConfig UP-TO-DATE
+> Task :tooling:backup_create:javaPreCompileDebug UP-TO-DATE
+> Task :tooling:backup_restore:generateDebugBuildConfig UP-TO-DATE
+> Task :features:settings:javaPreCompileDebug UP-TO-DATE
+> Task :features:sourceExplorer:checkKotlinGradlePluginConfigurationErrors
+> Task :features:sourceExplorer:generateDebugBuildConfig UP-TO-DATE
+> Task :features:webview:checkKotlinGradlePluginConfigurationErrors
+> Task :features:sourceExplorer:javaPreCompileDebug UP-TO-DATE
+> Task :features:webview:generateDebugBuildConfig UP-TO-DATE
+> Task :tooling:application_workers:checkKotlinGradlePluginConfigurationErrors
+> Task :features:webview:javaPreCompileDebug UP-TO-DATE
+> Task :tooling:backup_restore:javaPreCompileDebug UP-TO-DATE
+> Task :tooling:application_workers:generateDebugBuildConfig UP-TO-DATE
+> Task :tooling:local_source:checkKotlinGradlePluginConfigurationErrors
+> Task :tooling:local_source:javaPreCompileDebug UP-TO-DATE
+> Task :tooling:application_workers:javaPreCompileDebug UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:checkKotlinGradlePluginConfigurationErrors
+> Task :tooling:local_source:generateDebugBuildConfig UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:generateDebugBuildConfig UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:javaPreCompileDebug UP-TO-DATE
+> Task :app:javaPreCompileFossDebug UP-TO-DATE
+> Task :app:mergeFossDebugShaders UP-TO-DATE
+> Task :core:mergeDebugShaders UP-TO-DATE
+> Task :core:compileDebugShaders NO-SOURCE
+> Task :core:generateDebugAssets UP-TO-DATE
+> Task :app:compileFossDebugShaders NO-SOURCE
+> Task :app:generateFossDebugAssets UP-TO-DATE
+> Task :coreui:mergeDebugShaders UP-TO-DATE
+> Task :coreui:compileDebugShaders NO-SOURCE
+> Task :coreui:generateDebugAssets UP-TO-DATE
+> Task :coreui:mergeDebugAssets UP-TO-DATE
+> Task :core:mergeDebugAssets UP-TO-DATE
+> Task :navigation:mergeDebugShaders UP-TO-DATE
+> Task :networking:mergeDebugShaders UP-TO-DATE
+> Task :navigation:compileDebugShaders NO-SOURCE
+> Task :navigation:generateDebugAssets UP-TO-DATE
+> Task :networking:compileDebugShaders NO-SOURCE
+> Task :networking:generateDebugAssets UP-TO-DATE
+> Task :navigation:mergeDebugAssets UP-TO-DATE
+> Task :networking:mergeDebugAssets UP-TO-DATE
+> Task :scraper:mergeDebugShaders UP-TO-DATE
+> Task :strings:mergeDebugShaders UP-TO-DATE
+> Task :scraper:compileDebugShaders NO-SOURCE
+> Task :scraper:generateDebugAssets UP-TO-DATE
+> Task :strings:compileDebugShaders NO-SOURCE
+> Task :strings:generateDebugAssets UP-TO-DATE
+> Task :scraper:mergeDebugAssets UP-TO-DATE
+> Task :strings:mergeDebugAssets UP-TO-DATE
+> Task :features:catalogExplorer:mergeDebugShaders UP-TO-DATE
+> Task :features:catalogExplorer:compileDebugShaders NO-SOURCE
+> Task :features:catalogExplorer:generateDebugAssets UP-TO-DATE
+> Task :features:chaptersList:mergeDebugShaders UP-TO-DATE
+> Task :data:mergeDebugShaders UP-TO-DATE
+> Task :data:compileDebugShaders NO-SOURCE
+> Task :data:generateDebugAssets UP-TO-DATE
+> Task :features:chaptersList:compileDebugShaders NO-SOURCE
+> Task :features:chaptersList:generateDebugAssets UP-TO-DATE
+> Task :features:catalogExplorer:mergeDebugAssets UP-TO-DATE
+> Task :data:mergeDebugAssets UP-TO-DATE
+> Task :features:databaseExplorer:mergeDebugShaders UP-TO-DATE
+> Task :features:chaptersList:mergeDebugAssets UP-TO-DATE
+> Task :features:databaseExplorer:compileDebugShaders NO-SOURCE
+> Task :features:databaseExplorer:generateDebugAssets UP-TO-DATE
+> Task :features:globalSourceSearch:mergeDebugShaders UP-TO-DATE
+> Task :features:globalSourceSearch:compileDebugShaders NO-SOURCE
+> Task :features:globalSourceSearch:generateDebugAssets UP-TO-DATE
+> Task :features:databaseExplorer:mergeDebugAssets UP-TO-DATE
+> Task :features:globalSourceSearch:mergeDebugAssets UP-TO-DATE
+> Task :features:libraryExplorer:mergeDebugShaders UP-TO-DATE
+> Task :features:reader:mergeDebugShaders UP-TO-DATE
+> Task :features:reader:compileDebugShaders NO-SOURCE
+> Task :features:reader:generateDebugAssets UP-TO-DATE
+> Task :features:libraryExplorer:compileDebugShaders NO-SOURCE
+> Task :features:libraryExplorer:generateDebugAssets UP-TO-DATE
+> Task :features:reader:mergeDebugAssets UP-TO-DATE
+> Task :features:settings:mergeDebugShaders UP-TO-DATE
+> Task :features:sourceExplorer:mergeDebugShaders UP-TO-DATE
+> Task :features:libraryExplorer:mergeDebugAssets UP-TO-DATE
+> Task :features:sourceExplorer:compileDebugShaders NO-SOURCE
+> Task :features:sourceExplorer:generateDebugAssets UP-TO-DATE
+> Task :features:webview:mergeDebugShaders UP-TO-DATE
+> Task :features:sourceExplorer:mergeDebugAssets UP-TO-DATE
+> Task :features:settings:compileDebugShaders NO-SOURCE
+> Task :features:settings:generateDebugAssets UP-TO-DATE
+> Task :features:settings:mergeDebugAssets UP-TO-DATE
+> Task :tooling:application_workers:mergeDebugShaders UP-TO-DATE
+> Task :features:webview:compileDebugShaders NO-SOURCE
+> Task :features:webview:generateDebugAssets UP-TO-DATE
+> Task :tooling:algorithms:mergeDebugShaders UP-TO-DATE
+> Task :tooling:application_workers:compileDebugShaders NO-SOURCE
+> Task :tooling:algorithms:compileDebugShaders NO-SOURCE
+> Task :tooling:algorithms:generateDebugAssets UP-TO-DATE
+> Task :features:webview:mergeDebugAssets UP-TO-DATE
+> Task :tooling:application_workers:generateDebugAssets UP-TO-DATE
+> Task :tooling:backup_create:mergeDebugShaders UP-TO-DATE
+> Task :tooling:backup_create:compileDebugShaders NO-SOURCE
+> Task :tooling:algorithms:mergeDebugAssets UP-TO-DATE
+> Task :tooling:backup_create:generateDebugAssets UP-TO-DATE
+> Task :tooling:backup_restore:mergeDebugShaders UP-TO-DATE
+> Task :tooling:application_workers:mergeDebugAssets UP-TO-DATE
+> Task :tooling:backup_restore:compileDebugShaders NO-SOURCE
+> Task :tooling:backup_restore:generateDebugAssets UP-TO-DATE
+> Task :tooling:epub_importer:mergeDebugShaders UP-TO-DATE
+> Task :tooling:epub_importer:compileDebugShaders NO-SOURCE
+> Task :tooling:epub_importer:generateDebugAssets UP-TO-DATE
+> Task :tooling:backup_restore:mergeDebugAssets UP-TO-DATE
+> Task :tooling:epub_importer:mergeDebugAssets UP-TO-DATE
+> Task :tooling:epub_parser:mergeDebugShaders UP-TO-DATE
+> Task :tooling:epub_parser:compileDebugShaders NO-SOURCE
+> Task :tooling:epub_parser:generateDebugAssets UP-TO-DATE
+> Task :tooling:local_database:mergeDebugShaders UP-TO-DATE
+> Task :tooling:backup_create:mergeDebugAssets UP-TO-DATE
+> Task :tooling:local_database:compileDebugShaders NO-SOURCE
+> Task :tooling:local_database:generateDebugAssets UP-TO-DATE
+> Task :tooling:local_database:mergeDebugAssets UP-TO-DATE
+> Task :tooling:local_source:mergeDebugShaders UP-TO-DATE
+> Task :tooling:text_to_speech:mergeDebugShaders UP-TO-DATE
+> Task :tooling:text_to_speech:compileDebugShaders NO-SOURCE
+> Task :tooling:text_to_speech:generateDebugAssets UP-TO-DATE
+> Task :tooling:epub_parser:mergeDebugAssets UP-TO-DATE
+> Task :tooling:text_translator:domain:mergeDebugShaders UP-TO-DATE
+> Task :tooling:text_translator:domain:compileDebugShaders NO-SOURCE
+> Task :tooling:text_translator:domain:generateDebugAssets UP-TO-DATE
+> Task :tooling:text_translator:domain:mergeDebugAssets UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:mergeDebugShaders UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:compileDebugShaders NO-SOURCE
+> Task :tooling:text_translator:translator_nop:generateDebugAssets UP-TO-DATE
+> Task :tooling:local_source:compileDebugShaders NO-SOURCE
+> Task :tooling:local_source:generateDebugAssets UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:mergeDebugAssets UP-TO-DATE
+> Task :tooling:text_to_speech:mergeDebugAssets UP-TO-DATE
+> Task :app:desugarFossDebugFileDependencies UP-TO-DATE
+> Task :tooling:local_source:mergeDebugAssets UP-TO-DATE
+> Task :app:mergeFossDebugJniLibFolders UP-TO-DATE
+> Task :core:mergeDebugJniLibFolders UP-TO-DATE
+> Task :core:mergeDebugNativeLibs NO-SOURCE
+> Task :core:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :coreui:mergeDebugJniLibFolders UP-TO-DATE
+> Task :coreui:mergeDebugNativeLibs NO-SOURCE
+> Task :coreui:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :data:mergeDebugJniLibFolders UP-TO-DATE
+> Task :data:mergeDebugNativeLibs NO-SOURCE
+> Task :data:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :navigation:mergeDebugJniLibFolders UP-TO-DATE
+> Task :navigation:mergeDebugNativeLibs NO-SOURCE
+> Task :navigation:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :networking:mergeDebugJniLibFolders UP-TO-DATE
+> Task :networking:mergeDebugNativeLibs NO-SOURCE
+> Task :networking:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :scraper:mergeDebugJniLibFolders UP-TO-DATE
+> Task :scraper:mergeDebugNativeLibs NO-SOURCE
+> Task :scraper:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :strings:mergeDebugJniLibFolders UP-TO-DATE
+> Task :strings:mergeDebugNativeLibs NO-SOURCE
+> Task :strings:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :features:catalogExplorer:mergeDebugJniLibFolders UP-TO-DATE
+> Task :features:catalogExplorer:mergeDebugNativeLibs NO-SOURCE
+> Task :features:catalogExplorer:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :features:chaptersList:mergeDebugJniLibFolders UP-TO-DATE
+> Task :features:chaptersList:mergeDebugNativeLibs NO-SOURCE
+> Task :features:chaptersList:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :features:databaseExplorer:mergeDebugJniLibFolders UP-TO-DATE
+> Task :features:databaseExplorer:mergeDebugNativeLibs NO-SOURCE
+> Task :features:databaseExplorer:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :features:globalSourceSearch:mergeDebugJniLibFolders UP-TO-DATE
+> Task :features:globalSourceSearch:mergeDebugNativeLibs NO-SOURCE
+> Task :features:globalSourceSearch:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :features:libraryExplorer:mergeDebugJniLibFolders UP-TO-DATE
+> Task :features:libraryExplorer:mergeDebugNativeLibs NO-SOURCE
+> Task :features:libraryExplorer:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :features:reader:mergeDebugJniLibFolders UP-TO-DATE
+> Task :features:reader:mergeDebugNativeLibs NO-SOURCE
+> Task :features:reader:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :features:settings:mergeDebugJniLibFolders UP-TO-DATE
+> Task :features:settings:mergeDebugNativeLibs NO-SOURCE
+> Task :features:settings:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :features:sourceExplorer:mergeDebugJniLibFolders UP-TO-DATE
+> Task :features:sourceExplorer:mergeDebugNativeLibs NO-SOURCE
+> Task :features:sourceExplorer:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :features:webview:mergeDebugJniLibFolders UP-TO-DATE
+> Task :tooling:algorithms:generateDebugRFile UP-TO-DATE
+> Task :tooling:text_to_speech:generateDebugRFile UP-TO-DATE
+> Task :features:webview:mergeDebugNativeLibs NO-SOURCE
+> Task :features:webview:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :tooling:algorithms:mergeDebugJniLibFolders UP-TO-DATE
+> Task :tooling:algorithms:mergeDebugNativeLibs NO-SOURCE
+> Task :tooling:algorithms:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :tooling:application_workers:mergeDebugJniLibFolders UP-TO-DATE
+> Task :tooling:application_workers:mergeDebugNativeLibs NO-SOURCE
+> Task :app:mapFossDebugSourceSetPaths UP-TO-DATE
+> Task :tooling:application_workers:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :app:checkFossDebugAarMetadata UP-TO-DATE
+> Task :features:reader:dataBindingMergeDependencyArtifactsDebug UP-TO-DATE
+> Task :strings:generateDebugRFile UP-TO-DATE
+> Task :tooling:backup_create:mergeDebugJniLibFolders UP-TO-DATE
+> Task :tooling:text_translator:domain:generateDebugRFile UP-TO-DATE
+> Task :tooling:backup_restore:mergeDebugJniLibFolders UP-TO-DATE
+> Task :tooling:epub_importer:mergeDebugJniLibFolders UP-TO-DATE
+> Task :app:mergeFossDebugAssets UP-TO-DATE
+> Task :app:mergeFossDebugResources UP-TO-DATE
+> Task :app:compressFossDebugAssets UP-TO-DATE
+> Task :tooling:epub_importer:mergeDebugNativeLibs NO-SOURCE
+> Task :tooling:backup_create:mergeDebugNativeLibs NO-SOURCE
+> Task :tooling:backup_restore:mergeDebugNativeLibs NO-SOURCE
+> Task :tooling:epub_parser:mergeDebugJniLibFolders UP-TO-DATE
+> Task :tooling:epub_importer:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :tooling:backup_restore:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :tooling:backup_create:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :tooling:epub_parser:mergeDebugNativeLibs NO-SOURCE
+> Task :tooling:epub_parser:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :tooling:text_to_speech:mergeDebugJniLibFolders UP-TO-DATE
+> Task :tooling:local_database:mergeDebugJniLibFolders UP-TO-DATE
+> Task :tooling:local_source:mergeDebugJniLibFolders UP-TO-DATE
+> Task :tooling:text_translator:domain:mergeDebugJniLibFolders UP-TO-DATE
+> Task :tooling:text_to_speech:mergeDebugNativeLibs NO-SOURCE
+> Task :tooling:local_source:mergeDebugNativeLibs NO-SOURCE
+> Task :tooling:local_database:mergeDebugNativeLibs NO-SOURCE
+> Task :tooling:local_source:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :tooling:local_database:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :tooling:text_translator:domain:mergeDebugNativeLibs NO-SOURCE
+> Task :tooling:text_to_speech:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :tooling:text_translator:domain:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:mergeDebugJniLibFolders UP-TO-DATE
+> Task :app:validateSigningFossDebug UP-TO-DATE
+> Task :app:writeFossDebugAppMetadata UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:mergeDebugNativeLibs NO-SOURCE
+> Task :app:writeFossDebugSigningConfigVersions UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:copyDebugJniLibsProjectOnly UP-TO-DATE
+> Task :app:checkFossDebugDuplicateClasses UP-TO-DATE
+> Task :app:dataBindingMergeDependencyArtifactsFossDebug UP-TO-DATE
+> Task :tooling:algorithms:kspDebugKotlin UP-TO-DATE
+> Task :core:generateDebugRFile UP-TO-DATE
+> Task :features:reader:dataBindingGenBaseClassesDebug UP-TO-DATE
+> Task :tooling:epub_parser:generateDebugRFile UP-TO-DATE
+> Task :app:mergeFossDebugNativeLibs NO-SOURCE
+> Task :app:mergeExtDexFossDebug UP-TO-DATE
+> Task :app:stripFossDebugDebugSymbols NO-SOURCE
+> Task :app:dataBindingGenBaseClassesFossDebug UP-TO-DATE
+> Task :tooling:local_database:generateDebugRFile UP-TO-DATE
+> Task :networking:generateDebugRFile UP-TO-DATE
+> Task :navigation:generateDebugRFile UP-TO-DATE
+> Task :scraper:generateDebugRFile UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:generateDebugRFile UP-TO-DATE
+> Task :coreui:generateDebugRFile UP-TO-DATE
+> Task :data:generateDebugRFile UP-TO-DATE
+> Task :features:databaseExplorer:generateDebugRFile UP-TO-DATE
+> Task :tooling:epub_importer:generateDebugRFile UP-TO-DATE
+> Task :features:reader:generateDebugRFile UP-TO-DATE
+> Task :tooling:backup_create:generateDebugRFile UP-TO-DATE
+> Task :features:globalSourceSearch:generateDebugRFile UP-TO-DATE
+> Task :features:catalogExplorer:generateDebugRFile UP-TO-DATE
+> Task :tooling:backup_restore:generateDebugRFile UP-TO-DATE
+> Task :features:sourceExplorer:generateDebugRFile UP-TO-DATE
+> Task :features:webview:generateDebugRFile UP-TO-DATE
+> Task :features:chaptersList:generateDebugRFile UP-TO-DATE
+> Task :features:libraryExplorer:generateDebugRFile UP-TO-DATE
+> Task :features:settings:generateDebugRFile UP-TO-DATE
+> Task :tooling:application_workers:generateDebugRFile UP-TO-DATE
+> Task :tooling:local_source:generateDebugRFile UP-TO-DATE
+> Task :strings:kspDebugKotlin UP-TO-DATE
+> Task :tooling:text_translator:domain:kspDebugKotlin UP-TO-DATE
+> Task :tooling:algorithms:compileDebugKotlin UP-TO-DATE
+> Task :strings:compileDebugKotlin NO-SOURCE
+> Task :strings:processDebugJavaRes NO-SOURCE
+> Task :tooling:algorithms:processDebugJavaRes UP-TO-DATE
+> Task :strings:compileDebugJavaWithJavac UP-TO-DATE
+> Task :tooling:algorithms:compileDebugJavaWithJavac UP-TO-DATE
+> Task :tooling:text_translator:domain:compileDebugKotlin UP-TO-DATE
+> Task :tooling:text_translator:domain:compileDebugJavaWithJavac UP-TO-DATE
+> Task :tooling:text_translator:domain:processDebugJavaRes UP-TO-DATE
+> Task :strings:transformDebugClassesWithAsm UP-TO-DATE
+> Task :strings:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :strings:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :strings:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :tooling:text_translator:domain:transformDebugClassesWithAsm UP-TO-DATE
+> Task :tooling:algorithms:transformDebugClassesWithAsm UP-TO-DATE
+> Task :tooling:text_translator:domain:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :tooling:text_translator:domain:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :tooling:algorithms:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :tooling:text_translator:domain:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :tooling:algorithms:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :tooling:algorithms:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :core:kspDebugKotlin UP-TO-DATE
+> Task :tooling:text_to_speech:kspDebugKotlin UP-TO-DATE
+> Task :core:compileDebugKotlin UP-TO-DATE
+> Task :core:processDebugJavaRes UP-TO-DATE
+> Task :core:compileDebugJavaWithJavac UP-TO-DATE
+> Task :tooling:text_to_speech:compileDebugKotlin UP-TO-DATE
+> Task :tooling:text_to_speech:processDebugJavaRes UP-TO-DATE
+> Task :core:transformDebugClassesWithAsm UP-TO-DATE
+> Task :core:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :tooling:text_to_speech:compileDebugJavaWithJavac UP-TO-DATE
+> Task :core:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :tooling:text_to_speech:transformDebugClassesWithAsm UP-TO-DATE
+> Task :tooling:text_to_speech:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :tooling:text_to_speech:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :tooling:text_to_speech:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :core:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :tooling:epub_parser:kspDebugKotlin UP-TO-DATE
+> Task :tooling:local_database:kspDebugKotlin UP-TO-DATE
+> Task :networking:kspDebugKotlin UP-TO-DATE
+> Task :tooling:epub_parser:compileDebugKotlin UP-TO-DATE
+> Task :tooling:epub_parser:processDebugJavaRes UP-TO-DATE
+> Task :tooling:epub_parser:compileDebugJavaWithJavac UP-TO-DATE
+> Task :networking:compileDebugKotlin UP-TO-DATE
+> Task :tooling:local_database:compileDebugKotlin UP-TO-DATE
+> Task :networking:processDebugJavaRes UP-TO-DATE
+> Task :networking:compileDebugJavaWithJavac UP-TO-DATE
+> Task :tooling:local_database:processDebugJavaRes UP-TO-DATE
+> Task :tooling:local_database:compileDebugJavaWithJavac UP-TO-DATE
+> Task :networking:transformDebugClassesWithAsm UP-TO-DATE
+> Task :networking:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :networking:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :networking:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :tooling:epub_parser:transformDebugClassesWithAsm UP-TO-DATE
+> Task :tooling:epub_parser:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :tooling:epub_parser:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :tooling:epub_parser:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :tooling:local_database:transformDebugClassesWithAsm UP-TO-DATE
+> Task :tooling:local_database:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :tooling:local_database:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :tooling:local_database:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :scraper:kspDebugKotlin UP-TO-DATE
+> Task :navigation:kspDebugKotlin UP-TO-DATE
+> Task :navigation:compileDebugKotlin UP-TO-DATE
+> Task :navigation:processDebugJavaRes UP-TO-DATE
+> Task :navigation:compileDebugJavaWithJavac UP-TO-DATE
+> Task :navigation:transformDebugClassesWithAsm UP-TO-DATE
+> Task :navigation:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :navigation:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :navigation:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :coreui:kspDebugKotlin UP-TO-DATE
+> Task :scraper:compileDebugKotlin UP-TO-DATE
+> Task :scraper:compileDebugJavaWithJavac UP-TO-DATE
+> Task :scraper:processDebugJavaRes UP-TO-DATE
+> Task :coreui:compileDebugKotlin UP-TO-DATE
+> Task :coreui:processDebugJavaRes UP-TO-DATE
+> Task :coreui:compileDebugJavaWithJavac UP-TO-DATE
+> Task :scraper:transformDebugClassesWithAsm UP-TO-DATE
+> Task :scraper:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :scraper:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :coreui:transformDebugClassesWithAsm UP-TO-DATE
+> Task :coreui:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :data:kspDebugKotlin UP-TO-DATE
+> Task :coreui:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :data:compileDebugKotlin UP-TO-DATE
+> Task :scraper:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :features:webview:kspDebugKotlin UP-TO-DATE
+> Task :data:processDebugJavaRes UP-TO-DATE
+> Task :features:webview:compileDebugKotlin UP-TO-DATE
+> Task :features:webview:processDebugJavaRes UP-TO-DATE
+> Task :coreui:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :features:webview:compileDebugJavaWithJavac UP-TO-DATE
+> Task :data:compileDebugJavaWithJavac UP-TO-DATE
+> Task :features:webview:transformDebugClassesWithAsm UP-TO-DATE
+> Task :features:webview:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :features:webview:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :features:webview:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :data:transformDebugClassesWithAsm UP-TO-DATE
+> Task :data:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :data:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :app:processFossDebugMainManifest
+> Task :features:catalogExplorer:kspDebugKotlin UP-TO-DATE
+> Task :features:globalSourceSearch:kspDebugKotlin UP-TO-DATE
+> Task :data:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :tooling:epub_importer:kspDebugKotlin UP-TO-DATE
+> Task :features:chaptersList:kspDebugKotlin UP-TO-DATE
+> Task :features:globalSourceSearch:compileDebugKotlin UP-TO-DATE
+> Task :features:globalSourceSearch:compileDebugJavaWithJavac UP-TO-DATE
+> Task :tooling:epub_importer:compileDebugKotlin UP-TO-DATE
+> Task :tooling:epub_importer:compileDebugJavaWithJavac UP-TO-DATE
+> Task :features:globalSourceSearch:transformDebugClassesWithAsm UP-TO-DATE
+> Task :features:reader:kspDebugKotlin UP-TO-DATE
+> Task :tooling:backup_create:kspDebugKotlin UP-TO-DATE
+> Task :features:globalSourceSearch:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :tooling:epub_importer:transformDebugClassesWithAsm UP-TO-DATE
+> Task :tooling:epub_importer:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :features:sourceExplorer:kspDebugKotlin UP-TO-DATE
+> Task :tooling:epub_importer:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :features:sourceExplorer:compileDebugKotlin UP-TO-DATE
+> Task :features:sourceExplorer:compileDebugJavaWithJavac UP-TO-DATE
+> Task :features:sourceExplorer:transformDebugClassesWithAsm UP-TO-DATE
+> Task :features:sourceExplorer:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :features:databaseExplorer:kspDebugKotlin UP-TO-DATE
+> Task :features:chaptersList:compileDebugKotlin UP-TO-DATE
+> Task :tooling:local_source:kspDebugKotlin UP-TO-DATE
+> Task :features:catalogExplorer:compileDebugKotlin UP-TO-DATE
+> Task :features:globalSourceSearch:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :features:catalogExplorer:compileDebugJavaWithJavac UP-TO-DATE
+> Task :features:databaseExplorer:compileDebugKotlin UP-TO-DATE
+> Task :features:chaptersList:compileDebugJavaWithJavac UP-TO-DATE
+> Task :tooling:local_source:compileDebugKotlin UP-TO-DATE
+> Task :app:processFossDebugManifest
+> Task :tooling:local_source:compileDebugJavaWithJavac UP-TO-DATE
+> Task :features:sourceExplorer:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :features:databaseExplorer:compileDebugJavaWithJavac UP-TO-DATE
+> Task :tooling:local_source:transformDebugClassesWithAsm UP-TO-DATE
+> Task :tooling:local_source:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :tooling:local_source:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :features:databaseExplorer:transformDebugClassesWithAsm UP-TO-DATE
+> Task :app:processFossDebugManifestForPackage
+> Task :features:databaseExplorer:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :features:databaseExplorer:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :features:catalogExplorer:processDebugJavaRes UP-TO-DATE
+> Task :features:chaptersList:processDebugJavaRes UP-TO-DATE
+> Task :features:databaseExplorer:processDebugJavaRes UP-TO-DATE
+> Task :features:sourceExplorer:processDebugJavaRes UP-TO-DATE
+> Task :features:globalSourceSearch:processDebugJavaRes UP-TO-DATE
+> Task :tooling:epub_importer:processDebugJavaRes UP-TO-DATE
+> Task :tooling:local_source:processDebugJavaRes UP-TO-DATE
+> Task :tooling:epub_importer:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :tooling:local_source:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :features:chaptersList:transformDebugClassesWithAsm UP-TO-DATE
+> Task :features:chaptersList:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :features:globalSourceSearch:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :features:chaptersList:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :features:chaptersList:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :tooling:backup_create:compileDebugKotlin UP-TO-DATE
+> Task :features:catalogExplorer:transformDebugClassesWithAsm UP-TO-DATE
+> Task :features:libraryExplorer:kspDebugKotlin UP-TO-DATE
+> Task :tooling:backup_create:compileDebugJavaWithJavac UP-TO-DATE
+> Task :features:catalogExplorer:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :tooling:backup_create:processDebugJavaRes UP-TO-DATE
+> Task :features:libraryExplorer:compileDebugKotlin UP-TO-DATE
+> Task :features:reader:compileDebugKotlin UP-TO-DATE
+> Task :features:libraryExplorer:processDebugJavaRes UP-TO-DATE
+> Task :features:libraryExplorer:compileDebugJavaWithJavac UP-TO-DATE
+> Task :features:reader:processDebugJavaRes UP-TO-DATE
+> Task :features:reader:compileDebugJavaWithJavac UP-TO-DATE
+> Task :features:sourceExplorer:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :tooling:backup_create:transformDebugClassesWithAsm UP-TO-DATE
+> Task :features:libraryExplorer:transformDebugClassesWithAsm UP-TO-DATE
+> Task :tooling:backup_create:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :features:catalogExplorer:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :features:catalogExplorer:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :features:libraryExplorer:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :tooling:backup_create:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :features:libraryExplorer:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :tooling:backup_create:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :features:libraryExplorer:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :features:databaseExplorer:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :tooling:application_workers:kspDebugKotlin UP-TO-DATE
+> Task :tooling:application_workers:compileDebugKotlin UP-TO-DATE
+> Task :tooling:application_workers:compileDebugJavaWithJavac UP-TO-DATE
+> Task :tooling:application_workers:transformDebugClassesWithAsm UP-TO-DATE
+> Task :tooling:application_workers:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :tooling:application_workers:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :tooling:application_workers:processDebugJavaRes UP-TO-DATE
+> Task :tooling:application_workers:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :features:reader:transformDebugClassesWithAsm UP-TO-DATE
+> Task :features:reader:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :features:reader:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :features:reader:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :app:processFossDebugResources
+> Task :tooling:text_translator:translator_nop:kspDebugKotlin
+> Task :tooling:backup_restore:kspDebugKotlin
+
+> Task :tooling:text_translator:translator_nop:compileDebugKotlin
+w: file:///C:/Users/Nab/Documents/code/kotlin/NovelDokusha/tooling/text_translator/translator_nop/src/main/java/my/noveldokusha/text_translator/TranslationManagerGemini.kt:146:13 Variable 'lastException' is assigned but never accessed
+w: file:///C:/Users/Nab/Documents/code/kotlin/NovelDokusha/tooling/text_translator/translator_nop/src/main/java/my/noveldokusha/text_translator/TranslationManagerGemini.kt:214:49 Unnecessary safe call on a non-null receiver of type ResponseBody
+w: file:///C:/Users/Nab/Documents/code/kotlin/NovelDokusha/tooling/text_translator/translator_nop/src/main/java/my/noveldokusha/text_translator/TranslationManagerGemini.kt:214:60 Elvis operator (?:) always returns the left operand of non-nullable type String
+w: file:///C:/Users/Nab/Documents/code/kotlin/NovelDokusha/tooling/text_translator/translator_nop/src/main/java/my/noveldokusha/text_translator/TranslationManagerGemini.kt:318:13 Variable 'lastException' is assigned but never accessed
+w: file:///C:/Users/Nab/Documents/code/kotlin/NovelDokusha/tooling/text_translator/translator_nop/src/main/java/my/noveldokusha/text_translator/TranslationManagerGemini.kt:383:49 Unnecessary safe call on a non-null receiver of type ResponseBody
+w: file:///C:/Users/Nab/Documents/code/kotlin/NovelDokusha/tooling/text_translator/translator_nop/src/main/java/my/noveldokusha/text_translator/TranslationManagerGemini.kt:383:60 Elvis operator (?:) always returns the left operand of non-nullable type String
+
+> Task :tooling:text_translator:translator_nop:processDebugJavaRes UP-TO-DATE
+> Task :tooling:backup_restore:compileDebugKotlin
+> Task :tooling:backup_restore:processDebugJavaRes UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:compileDebugJavaWithJavac UP-TO-DATE
+> Task :tooling:text_translator:translator_nop:transformDebugClassesWithAsm
+> Task :tooling:text_translator:translator_nop:bundleLibRuntimeToDirDebug
+> Task :tooling:text_translator:translator_nop:bundleLibRuntimeToJarDebug
+> Task :tooling:text_translator:translator_nop:bundleLibCompileToJarDebug
+> Task :tooling:backup_restore:compileDebugJavaWithJavac
+> Task :tooling:backup_restore:transformDebugClassesWithAsm
+> Task :tooling:backup_restore:bundleLibRuntimeToJarDebug
+> Task :tooling:backup_restore:bundleLibCompileToJarDebug
+> Task :tooling:backup_restore:bundleLibRuntimeToDirDebug
+> Task :features:settings:kspDebugKotlin
+> Task :features:settings:compileDebugKotlin
+> Task :features:settings:processDebugJavaRes UP-TO-DATE
+> Task :features:settings:compileDebugJavaWithJavac UP-TO-DATE
+> Task :features:settings:transformDebugClassesWithAsm
+> Task :features:settings:bundleLibRuntimeToJarDebug UP-TO-DATE
+> Task :features:settings:bundleLibCompileToJarDebug UP-TO-DATE
+> Task :features:settings:bundleLibRuntimeToDirDebug UP-TO-DATE
+> Task :app:mergeLibDexFossDebug
+> Task :app:kspFossDebugKotlin
+> Task :app:compileFossDebugKotlin
+> Task :app:compileFossDebugJavaWithJavac UP-TO-DATE
+> Task :app:hiltAggregateDepsFossDebug UP-TO-DATE
+> Task :app:hiltJavaCompileFossDebug
+> Task :app:processFossDebugJavaRes UP-TO-DATE
+> Task :app:mergeFossDebugJavaResource UP-TO-DATE
+> Task :app:transformFossDebugClassesWithAsm
+> Task :app:dexBuilderFossDebug
+> Task :app:mergeProjectDexFossDebug UP-TO-DATE
+> Task :app:mergeFossDebugGlobalSynthetics UP-TO-DATE
+> Task :app:packageFossDebug
+> Task :app:assembleFossDebug
+> Task :app:createFossDebugApkListingFileRedirect
+
+[Incubating] Problems report is available at: file:///C:/Users/Nab/Documents/code/kotlin/NovelDokusha/build/reports/problems/problems-report.html
+
+BUILD SUCCESSFUL in 2m 11s
+692 actionable tasks: 56 executed, 636 up-to-date
+Configuration cache entry stored.

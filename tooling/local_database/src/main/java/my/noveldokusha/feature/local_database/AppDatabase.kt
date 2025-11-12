@@ -47,8 +47,8 @@ interface AppDatabase {
             inputStream: InputStream
         ): AppDatabase = Room
             .databaseBuilder(ctx, AppRoomDatabase::class.java, name)
-            .addMigrations(*databaseMigrations())
             .createFromInputStream { inputStream }
+            .fallbackToDestructiveMigration() // Don't apply migrations, database is already at correct version
             .build()
             .also { it.name = name }
     }

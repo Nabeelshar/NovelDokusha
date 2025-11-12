@@ -34,17 +34,20 @@ class TranslationManagerGemini(
         .writeTimeout(30, TimeUnit.SECONDS)
         .build()
 
-    // Read API key dynamically from preferences
-    private val apiKey: String
+    // Read API keys dynamically from preferences (supports multiple keys separated by newlines)
+    private val apiKeys: List<String>
         get() = appPreferences.TRANSLATION_GEMINI_API_KEY.value
+            .split("\n", ";")
+            .map { it.trim() }
+            .filter { it.isNotBlank() }
 
     private fun getApiEndpoint(key: String): String {
-        return "https://generativelanguage.googleapis.com/v1beta/models/gemini-2.5-flash-lite:generateContent?key=$key"
+        return "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:streamGenerateContent?key=$key"
     }
 
     override val available = true  // Always show settings UI, even without API key
     override val isUsingOnlineTranslation: Boolean
-        get() = apiKey.isNotBlank()
+        get() = apiKeys.isNotEmpty()
 
     // Cache for batch translations to avoid re-translating same chapter
     private val translationCache = mutableMapOf<String, String>()
@@ -74,7 +77,7 @@ class TranslationManagerGemini(
     }
 
     override fun getTranslator(source: String, target: String): TranslatorState {
-        Log.d(TAG, "getTranslator: source=$source, target=$target, apiKeyLength=${apiKey.length}")
+        Log.d(TAG, "getTranslator: source=$source, target=$target, apiKeysConfigured=${apiKeys.size}")
         return TranslatorState(
             source = source,
             target = target,
@@ -95,15 +98,14 @@ class TranslationManagerGemini(
             return@withContext it
         }
         
-        // Read API key fresh each time
-        val currentApiKey = apiKey
+        val availableKeys = apiKeys
         
         Log.d(TAG, "translateWithGemini: starting translation")
         Log.d(TAG, "  source=$sourceLanguage, target=$targetLanguage")
-        Log.d(TAG, "  textLength=${text.length}, apiKeyConfigured=${currentApiKey.isNotBlank()}")
+        Log.d(TAG, "  textLength=${text.length}, apiKeysAvailable=${availableKeys.size}")
         
-        if (currentApiKey.isBlank()) {
-            Log.e(TAG, "translateWithGemini: API key is blank!")
+        if (availableKeys.isEmpty()) {
+            Log.e(TAG, "translateWithGemini: No API keys configured!")
             throw IllegalStateException("Gemini API key not configured")
         }
 
@@ -113,16 +115,44 @@ class TranslationManagerGemini(
         val targetLangName = targetLocale.displayLanguage
 
         val prompt = """
-            Translate the following text from $sourceLangName to $targetLangName.
-            Only provide the translation, without any explanations or additional text.
+            You are an expert Chinese webnovel translator specializing in cultivation/xianxia novels. Translate the following text from $sourceLangName to $targetLangName.
+            
+            CRITICAL TRANSLATION RULES:
+            1. PRESERVE character names in pinyin (e.g., Chen Fei, Lin Xi, Zhang Wei, Wang Hao)
+            
+            2. TRANSLATE EVERYTHING ELSE to English equivalents:
+               - Location names: Translate to English (e.g., Lingxi Peak → Spiritual Rhinoceros Peak, Qingmu → Azure Wood/Green Wood)
+               - Cultivation terms: Use standard English (e.g., gongde → merit/karma, lingqi → spiritual energy, dantian → energy core)
+               - Technique names: Translate descriptively (e.g., Heavenly Dragon Palm, Nine Yang Divine Art)
+               - Titles and honorifics: Use English (e.g., Sect Master, Senior Brother, Junior Sister, Elder)
+               - Sect/organization names: Translate to English (e.g., Azure Cloud Sect, Demon Palace)
+               - Realm names: Use established translations (e.g., Qi Condensation, Foundation Establishment, Golden Core)
+               - Artifact names: Translate descriptively (e.g., Heaven-Piercing Sword, Soul-Devouring Banner)
+            
+            3. QUALITY STANDARDS:
+               - Produce natural, fluent $targetLangName that reads smoothly
+               - Use standard Wuxiaworld/webnovel terminology for cultivation concepts
+               - Preserve the original tone, style, and emotional impact
+               - Remove any advertisements, author notes, or promotional content
+               - Maintain consistency throughout the translation
+            
+            4. FORMAT:
+               - Provide ONLY the translation
+               - No explanations, notes, or additional commentary
+               - Maintain paragraph structure
             
             Text to translate:
             $text
         """.trimIndent()
 
         var lastException: Exception? = null
+        val totalAttempts = retryCount * availableKeys.size // Try each key multiple times
         
-        repeat(retryCount) { attempt ->
+        repeat(totalAttempts) { attempt ->
+            // Rotate through API keys on each attempt
+            val currentApiKey = availableKeys[attempt % availableKeys.size]
+            val attemptWithinKey = attempt / availableKeys.size + 1
+            
             try {
                 val jsonBody = JSONObject().apply {
                     put("contents", JSONArray().apply {
@@ -132,6 +162,11 @@ class TranslationManagerGemini(
                                     put("text", prompt)
                                 })
                             })
+                        })
+                    })
+                    put("generationConfig", JSONObject().apply {
+                        put("thinkingConfig", JSONObject().apply {
+                            put("thinkingBudget", 0)
                         })
                     })
                 }
@@ -146,7 +181,7 @@ class TranslationManagerGemini(
                     .post(requestBody)
                     .build()
 
-                Log.d(TAG, "translateWithGemini: sending API request (attempt ${attempt + 1}/$retryCount)")
+                Log.d(TAG, "translateWithGemini: sending request (attempt ${attempt + 1}/$totalAttempts, key ${(attempt % availableKeys.size) + 1}/${availableKeys.size})")
                 val response = client.newCall(request).execute()
                 
                 val code = response.code
@@ -154,22 +189,22 @@ class TranslationManagerGemini(
                 
                 when (code) {
                     429 -> {
-                        // Rate limit - wait with exponential backoff
-                        val waitTime = (1000L * (attempt + 1) * (attempt + 1)) // 1s, 4s, 9s
-                        Log.w(TAG, "translateWithGemini: Rate limit (429), waiting ${waitTime}ms before retry")
-                        if (attempt < retryCount - 1) {
-                            kotlinx.coroutines.delay(waitTime)
-                            return@repeat // Try again
+                        // Rate limit hit - rotate to next API key immediately
+                        Log.w(TAG, "translateWithGemini: Rate limit (429) on key ${(attempt % availableKeys.size) + 1}, rotating to next key")
+                        if (attempt < totalAttempts - 1) {
+                            // Small delay before next key
+                            kotlinx.coroutines.delay(500)
+                            return@repeat // Try next key
                         } else {
-                            // Last attempt failed
-                            return@withContext "[Translation rate limit exceeded. Please wait a moment and try again.]"
+                            // All keys exhausted
+                            return@withContext "[Translation rate limit exceeded on all API keys. Please wait and try again.]"
                         }
                     }
                     in 500..599 -> {
-                        // Server error - retry
-                        val waitTime = 2000L * (attempt + 1)
+                        // Server error - retry with backoff
+                        val waitTime = 2000L * attemptWithinKey
                         Log.w(TAG, "translateWithGemini: Server error ($code), waiting ${waitTime}ms before retry")
-                        if (attempt < retryCount - 1) {
+                        if (attempt < totalAttempts - 1) {
                             kotlinx.coroutines.delay(waitTime)
                             return@repeat
                         } else {
@@ -208,16 +243,16 @@ class TranslationManagerGemini(
                 } catch (e: Exception) {
                     Log.e(TAG, "translateWithGemini: parse error - ${e.message}", e)
                     lastException = e
-                    if (attempt < retryCount - 1) {
-                        kotlinx.coroutines.delay(1000L * (attempt + 1))
+                    if (attempt < totalAttempts - 1) {
+                        kotlinx.coroutines.delay(1000L * attemptWithinKey)
                         return@repeat
                     }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "translateWithGemini: error on attempt ${attempt + 1} - ${e.message}", e)
                 lastException = e
-                if (attempt < retryCount - 1) {
-                    kotlinx.coroutines.delay(1000L * (attempt + 1))
+                if (attempt < totalAttempts - 1) {
+                    kotlinx.coroutines.delay(1000L * attemptWithinKey)
                 } else {
                     return@withContext "[Translation error: ${e.message?.take(50) ?: "unknown"}]"
                 }
@@ -240,10 +275,10 @@ class TranslationManagerGemini(
         
         Log.d(TAG, "translateBatch: translating ${texts.size} paragraphs at once")
         
-        // Read API key
-        val currentApiKey = apiKey
-        if (currentApiKey.isBlank()) {
-            Log.e(TAG, "translateBatch: API key is blank!")
+        // Validate API keys
+        val availableKeys = apiKeys
+        if (availableKeys.isEmpty()) {
+            Log.e(TAG, "translateBatch: No API keys configured!")
             return@withContext texts.associateWith { "[API key not configured]" }
         }
 
@@ -258,9 +293,30 @@ class TranslationManagerGemini(
         }.joinToString("\n\n")
 
         val prompt = """
-            Translate the following numbered paragraphs from $sourceLangName to $targetLangName.
-            Maintain the same numbering format (1., 2., 3., etc.) in your response.
-            Only provide the translations, without any explanations or additional text.
+            You are an expert Chinese webnovel translator specializing in cultivation/xianxia novels. Translate these numbered paragraphs from $sourceLangName to $targetLangName.
+            
+            CRITICAL TRANSLATION RULES:
+            1. PRESERVE character names in pinyin (e.g., Chen Fei, Lin Xi, Zhang Wei, Wang Hao)
+            
+            2. TRANSLATE EVERYTHING ELSE to English equivalents:
+               - Location names: Translate to English (e.g., Lingxi Peak → Spiritual Rhinoceros Peak, Qingmu → Azure Wood/Green Wood)
+               - Cultivation terms: Use standard English (e.g., gongde → merit/karma, lingqi → spiritual energy, dantian → energy core)
+               - Technique names: Translate descriptively (e.g., Heavenly Dragon Palm, Nine Yang Divine Art)
+               - Titles and honorifics: Use English (e.g., Sect Master, Senior Brother, Junior Sister, Elder)
+               - Sect/organization names: Translate to English (e.g., Azure Cloud Sect, Demon Palace)
+               - Realm names: Use established translations (e.g., Qi Condensation, Foundation Establishment, Golden Core)
+               - Artifact names: Translate descriptively (e.g., Heaven-Piercing Sword, Soul-Devouring Banner)
+            
+            3. QUALITY STANDARDS:
+               - Produce natural, fluent $targetLangName that reads smoothly
+               - Use standard Wuxiaworld/webnovel terminology for cultivation concepts
+               - Maintain consistency throughout all paragraphs
+               - Remove any advertisements or promotional content
+            
+            4. FORMAT REQUIREMENTS:
+               - Maintain exact numbering format (1., 2., 3., etc.)
+               - Provide ONLY translations, no explanations
+               - Keep paragraph structure intact
             
             Paragraphs to translate:
             $numberedTexts
@@ -268,8 +324,12 @@ class TranslationManagerGemini(
 
         var lastException: Exception? = null
         val retryCount = 3
+        val totalAttempts = retryCount * availableKeys.size
         
-        repeat(retryCount) { attempt ->
+        repeat(totalAttempts) { attempt ->
+            val currentApiKey = availableKeys[attempt % availableKeys.size]
+            val attemptWithinKey = attempt / availableKeys.size + 1
+            
             try {
                 val jsonBody = JSONObject().apply {
                     put("contents", JSONArray().apply {
@@ -279,6 +339,11 @@ class TranslationManagerGemini(
                                     put("text", prompt)
                                 })
                             })
+                        })
+                    })
+                    put("generationConfig", JSONObject().apply {
+                        put("thinkingConfig", JSONObject().apply {
+                            put("thinkingBudget", 0)
                         })
                     })
                 }
@@ -293,7 +358,7 @@ class TranslationManagerGemini(
                     .post(requestBody)
                     .build()
 
-                Log.d(TAG, "translateBatch: sending API request (attempt ${attempt + 1}/$retryCount)")
+                Log.d(TAG, "translateBatch: sending request (attempt ${attempt + 1}/$totalAttempts, key ${(attempt % availableKeys.size) + 1}/${availableKeys.size})")
                 val response = client.newCall(request).execute()
                 
                 val code = response.code
@@ -301,19 +366,18 @@ class TranslationManagerGemini(
                 
                 when (code) {
                     429 -> {
-                        val waitTime = (1000L * (attempt + 1) * (attempt + 1))
-                        Log.w(TAG, "translateBatch: Rate limit (429), waiting ${waitTime}ms")
-                        if (attempt < retryCount - 1) {
-                            kotlinx.coroutines.delay(waitTime)
+                        Log.w(TAG, "translateBatch: Rate limit (429) on key ${(attempt % availableKeys.size) + 1}, rotating to next key")
+                        if (attempt < totalAttempts - 1) {
+                            kotlinx.coroutines.delay(500)
                             return@repeat
                         } else {
-                            return@withContext texts.associateWith { "[Rate limit exceeded]" }
+                            return@withContext texts.associateWith { "[Rate limit exceeded on all API keys]" }
                         }
                     }
                     in 500..599 -> {
-                        val waitTime = 2000L * (attempt + 1)
+                        val waitTime = 2000L * attemptWithinKey
                         Log.w(TAG, "translateBatch: Server error ($code), waiting ${waitTime}ms")
-                        if (attempt < retryCount - 1) {
+                        if (attempt < totalAttempts - 1) {
                             kotlinx.coroutines.delay(waitTime)
                             return@repeat
                         } else {
@@ -391,16 +455,16 @@ class TranslationManagerGemini(
                 } catch (e: Exception) {
                     Log.e(TAG, "translateBatch: parse error - ${e.message}", e)
                     lastException = e
-                    if (attempt < retryCount - 1) {
-                        kotlinx.coroutines.delay(1000L * (attempt + 1))
+                    if (attempt < totalAttempts - 1) {
+                        kotlinx.coroutines.delay(1000L * attemptWithinKey)
                         return@repeat
                     }
                 }
             } catch (e: Exception) {
                 Log.e(TAG, "translateBatch: error on attempt ${attempt + 1} - ${e.message}", e)
                 lastException = e
-                if (attempt < retryCount - 1) {
-                    kotlinx.coroutines.delay(1000L * (attempt + 1))
+                if (attempt < totalAttempts - 1) {
+                    kotlinx.coroutines.delay(1000L * attemptWithinKey)
                 }
             }
         }
