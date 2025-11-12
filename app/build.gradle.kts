@@ -44,8 +44,8 @@ android {
 
     defaultConfig {
         applicationId = "my.noveldokusha"
-        versionCode = 23
-        versionName = "2.3.4"
+        versionCode = 24
+        versionName = "2.3.5"
         setProperty("archivesBaseName", "NovelDokusha_v$versionName")
     }
 
