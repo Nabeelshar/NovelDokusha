@@ -48,6 +48,7 @@ internal fun SettingsScreenBody(
     onRemoveTranslationModel: (lang: String) -> Unit,
     onCheckForUpdatesManual: () -> Unit,
     onGeminiApiKeyChange: (String) -> Unit,
+    onGeminiModelChange: (String) -> Unit,
     onPreferOnlineChange: (Boolean) -> Unit,
 ) {
     Column(
@@ -81,8 +82,10 @@ internal fun SettingsScreenBody(
             HorizontalDivider()
             SettingsGeminiTranslation(
                 geminiApiKey = state.geminiApiKey.value,
+                geminiModel = state.geminiModel.value,
                 preferOnlineTranslation = state.preferOnlineTranslation.value,
                 onGeminiApiKeyChange = onGeminiApiKeyChange,
+                onGeminiModelChange = onGeminiModelChange,
                 onPreferOnlineChange = onPreferOnlineChange
             )
         }
@@ -139,6 +142,7 @@ private fun Preview() {
                         autoUpdateIntervalHours = remember { mutableIntStateOf(24) },
                     ),
                     geminiApiKey = remember { derivedStateOf { "" } },
+                    geminiModel = remember { derivedStateOf { "" } },
                     preferOnlineTranslation = remember { derivedStateOf { false } },
                 ),
                 onFollowSystem = { },
@@ -151,6 +155,7 @@ private fun Preview() {
                 onRemoveTranslationModel = { },
                 onCheckForUpdatesManual = { },
                 onGeminiApiKeyChange = { },
+                onGeminiModelChange = { },
                 onPreferOnlineChange = { },
             )
         }

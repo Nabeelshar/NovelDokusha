@@ -32,11 +32,14 @@ import my.noveldokusha.settings.R
 @Composable
 internal fun SettingsGeminiTranslation(
     geminiApiKey: String,
+    geminiModel: String,
     preferOnlineTranslation: Boolean,
     onGeminiApiKeyChange: (String) -> Unit,
+    onGeminiModelChange: (String) -> Unit,
     onPreferOnlineChange: (Boolean) -> Unit,
 ) {
     var apiKeyText by remember(geminiApiKey) { mutableStateOf(geminiApiKey) }
+    var modelText by remember(geminiModel) { mutableStateOf(geminiModel) }
     
     Column {
         Text(
@@ -72,17 +75,48 @@ internal fun SettingsGeminiTranslation(
                             onGeminiApiKeyChange(it)
                         },
                         label = { Text("Enter your Gemini API key(s)") },
-                        placeholder = { Text("AIzaSy...") },
-                        visualTransformation = PasswordVisualTransformation(),
+                        placeholder = { Text("AIzaSy...\\nAIzaSy...") },
                         modifier = Modifier.fillMaxWidth(),
-                        singleLine = false,
-                        minLines = 1,
+                        minLines = 2,
                         maxLines = 5
                     )
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "Get your free API key at: ai.google.dev\n" +
                                "Tip: Enter multiple API keys (one per line or separated by semicolon) to avoid rate limits",
+                        style = MaterialTheme.typography.bodySmall,
+                        color = MaterialTheme.colorScheme.onSurfaceVariant
+                    )
+                }
+            }
+        )
+        
+        Spacer(modifier = Modifier.height(8.dp))
+        
+        ListItem(
+            headlineContent = {
+                Column(modifier = Modifier.fillMaxWidth()) {
+                    Text(
+                        text = "Gemini Model",
+                        style = MaterialTheme.typography.titleSmall
+                    )
+                    Spacer(modifier = Modifier.height(8.dp))
+                    OutlinedTextField(
+                        value = modelText,
+                        onValueChange = {
+                            modelText = it
+                            onGeminiModelChange(it)
+                        },
+                        label = { Text("Model name") },
+                        placeholder = { Text("gemini-2.5-flash-lite") },
+                        modifier = Modifier.fillMaxWidth(),
+                        singleLine = true
+                    )
+                    Spacer(modifier = Modifier.height(4.dp))
+                    Text(
+                        text = "Default: gemini-2.5-flash-lite\n" +
+                               "Examples: gemini-flash-lite-latest, gemini-2.5-flash-lite\n" +
+                               "Find models at: ai.google.dev/gemini-api/docs/models",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )

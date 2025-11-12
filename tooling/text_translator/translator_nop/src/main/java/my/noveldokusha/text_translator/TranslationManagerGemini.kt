@@ -42,7 +42,8 @@ class TranslationManagerGemini(
             .filter { it.isNotBlank() }
 
     private fun getApiEndpoint(key: String): String {
-        return "https://generativelanguage.googleapis.com/v1beta/models/gemini-flash-lite-latest:streamGenerateContent?key=$key"
+        val model = appPreferences.TRANSLATION_GEMINI_MODEL.value.ifBlank { "gemini-2.0-flash-exp" }
+        return "https://generativelanguage.googleapis.com/v1beta/models/$model:streamGenerateContent?key=$key"
     }
 
     override val available = true  // Always show settings UI, even without API key
@@ -222,24 +223,45 @@ class TranslationManagerGemini(
                 Log.d(TAG, "translateWithGemini: response body length=${responseBody.length}")
 
                 try {
-                    val jsonResponse = JSONObject(responseBody)
-                    val candidates = jsonResponse.getJSONArray("candidates")
-                    if (candidates.length() > 0) {
-                        val content = candidates.getJSONObject(0)
-                            .getJSONObject("content")
-                        val parts = content.getJSONArray("parts")
-                        if (parts.length() > 0) {
-                            val translatedText = parts.getJSONObject(0)
-                                .getString("text")
-                                .trim()
-                            Log.d(TAG, "translateWithGemini: success, result length=${translatedText.length}")
-                            // Cache the result
-                            translationCache[cacheKey] = translatedText
-                            return@withContext translatedText
+                    // Check if response is streaming (array) or single object
+                    val translatedText = if (responseBody.trimStart().startsWith("[")) {
+                        // Streaming response - array of chunks
+                        val jsonArray = org.json.JSONArray(responseBody)
+                        val textBuilder = StringBuilder()
+                        for (i in 0 until jsonArray.length()) {
+                            val chunk = jsonArray.getJSONObject(i)
+                            val candidates = chunk.getJSONArray("candidates")
+                            if (candidates.length() > 0) {
+                                val content = candidates.getJSONObject(0).getJSONObject("content")
+                                val parts = content.getJSONArray("parts")
+                                if (parts.length() > 0) {
+                                    textBuilder.append(parts.getJSONObject(0).getString("text"))
+                                }
+                            }
                         }
+                        textBuilder.toString().trim()
+                    } else {
+                        // Single response object
+                        val jsonResponse = JSONObject(responseBody)
+                        val candidates = jsonResponse.getJSONArray("candidates")
+                        if (candidates.length() > 0) {
+                            val content = candidates.getJSONObject(0).getJSONObject("content")
+                            val parts = content.getJSONArray("parts")
+                            if (parts.length() > 0) {
+                                parts.getJSONObject(0).getString("text").trim()
+                            } else ""
+                        } else ""
                     }
-                    Log.e(TAG, "translateWithGemini: Invalid response format")
-                    return@withContext "[Translation failed: invalid response]"
+                    
+                    if (translatedText.isNotEmpty()) {
+                        Log.d(TAG, "translateWithGemini: success, result length=${translatedText.length}")
+                        // Cache the result
+                        translationCache[cacheKey] = translatedText
+                        return@withContext translatedText
+                    } else {
+                        Log.e(TAG, "translateWithGemini: Invalid response format")
+                        return@withContext "[Translation failed: invalid response]"
+                    }
                 } catch (e: Exception) {
                     Log.e(TAG, "translateWithGemini: parse error - ${e.message}", e)
                     lastException = e
@@ -394,64 +416,88 @@ class TranslationManagerGemini(
                 Log.d(TAG, "translateBatch: response length=${responseBody.length}")
 
                 try {
-                    val jsonResponse = JSONObject(responseBody)
-                    val candidates = jsonResponse.getJSONArray("candidates")
-                    if (candidates.length() > 0) {
-                        val content = candidates.getJSONObject(0).getJSONObject("content")
-                        val parts = content.getJSONArray("parts")
-                        if (parts.length() > 0) {
-                            val translatedText = parts.getJSONObject(0).getString("text").trim()
-                            Log.d(TAG, "translateBatch: success, parsing ${texts.size} translations")
-                            
-                            // Parse numbered translations back into map
-                            val translations = mutableMapOf<String, String>()
-                            val lines = translatedText.split("\n").filter { it.isNotBlank() }
-                            var currentIndex = 0
-                            var currentTranslation = StringBuilder()
-                            
-                            for (line in lines) {
-                                val numberMatch = Regex("^(\\d+)\\.\\s*").find(line)
-                                if (numberMatch != null) {
-                                    // New numbered paragraph
-                                    if (currentTranslation.isNotEmpty() && currentIndex > 0) {
-                                        val originalText = texts.getOrNull(currentIndex - 1)
-                                        if (originalText != null) {
-                                            translations[originalText] = currentTranslation.toString().trim()
-                                        }
-                                        currentTranslation.clear()
-                                    }
-                                    currentIndex = numberMatch.groupValues[1].toIntOrNull() ?: (currentIndex + 1)
-                                    currentTranslation.append(line.substring(numberMatch.range.last + 1))
-                                } else {
-                                    // Continuation of current paragraph
-                                    if (currentTranslation.isNotEmpty()) {
-                                        currentTranslation.append(" ")
-                                    }
-                                    currentTranslation.append(line.trim())
+                    // Check if response is streaming (array) or single object
+                    val translatedText = if (responseBody.trimStart().startsWith("[")) {
+                        // Streaming response - array of chunks
+                        val jsonArray = org.json.JSONArray(responseBody)
+                        val textBuilder = StringBuilder()
+                        for (i in 0 until jsonArray.length()) {
+                            val chunk = jsonArray.getJSONObject(i)
+                            val candidates = chunk.getJSONArray("candidates")
+                            if (candidates.length() > 0) {
+                                val content = candidates.getJSONObject(0).getJSONObject("content")
+                                val parts = content.getJSONArray("parts")
+                                if (parts.length() > 0) {
+                                    textBuilder.append(parts.getJSONObject(0).getString("text"))
                                 }
                             }
-                            
-                            // Add last translation
-                            if (currentTranslation.isNotEmpty() && currentIndex > 0) {
-                                val originalText = texts.getOrNull(currentIndex - 1)
-                                if (originalText != null) {
-                                    translations[originalText] = currentTranslation.toString().trim()
-                                }
-                            }
-                            
-                            // Fill in any missing translations with originals
-                            texts.forEach { text ->
-                                if (!translations.containsKey(text)) {
-                                    translations[text] = text
-                                }
-                            }
-                            
-                            Log.d(TAG, "translateBatch: parsed ${translations.size} translations")
-                            return@withContext translations
                         }
+                        textBuilder.toString().trim()
+                    } else {
+                        // Single response object
+                        val jsonResponse = JSONObject(responseBody)
+                        val candidates = jsonResponse.getJSONArray("candidates")
+                        if (candidates.length() > 0) {
+                            val content = candidates.getJSONObject(0).getJSONObject("content")
+                            val parts = content.getJSONArray("parts")
+                            if (parts.length() > 0) {
+                                parts.getJSONObject(0).getString("text").trim()
+                            } else ""
+                        } else ""
                     }
-                    Log.e(TAG, "translateBatch: Invalid response format")
-                    return@withContext texts.associateWith { "[Invalid response]" }
+                    
+                    if (translatedText.isNotEmpty()) {
+                        Log.d(TAG, "translateBatch: success, parsing ${texts.size} translations")
+                        
+                        // Parse numbered translations back into map
+                        val translations = mutableMapOf<String, String>()
+                        val lines = translatedText.split("\n").filter { it.isNotBlank() }
+                        var currentIndex = 0
+                        var currentTranslation = StringBuilder()
+                        
+                        for (line in lines) {
+                            val numberMatch = Regex("^(\\d+)\\.\\s*").find(line)
+                            if (numberMatch != null) {
+                                // New numbered paragraph
+                                if (currentTranslation.isNotEmpty() && currentIndex > 0) {
+                                    val originalText = texts.getOrNull(currentIndex - 1)
+                                    if (originalText != null) {
+                                        translations[originalText] = currentTranslation.toString().trim()
+                                    }
+                                    currentTranslation.clear()
+                                }
+                                currentIndex = numberMatch.groupValues[1].toIntOrNull() ?: (currentIndex + 1)
+                                currentTranslation.append(line.substring(numberMatch.range.last + 1))
+                            } else {
+                                // Continuation of current paragraph
+                                if (currentTranslation.isNotEmpty()) {
+                                    currentTranslation.append(" ")
+                                }
+                                currentTranslation.append(line.trim())
+                            }
+                        }
+                        
+                        // Add last translation
+                        if (currentTranslation.isNotEmpty() && currentIndex > 0) {
+                            val originalText = texts.getOrNull(currentIndex - 1)
+                            if (originalText != null) {
+                                translations[originalText] = currentTranslation.toString().trim()
+                            }
+                        }
+                        
+                        // Fill in any missing translations with originals
+                        texts.forEach { text ->
+                            if (!translations.containsKey(text)) {
+                                translations[text] = text
+                            }
+                        }
+                        
+                        Log.d(TAG, "translateBatch: parsed ${translations.size} translations")
+                        return@withContext translations
+                    } else {
+                        Log.e(TAG, "translateBatch: Invalid response format")
+                        return@withContext texts.associateWith { "[Invalid response]" }
+                    }
                 } catch (e: Exception) {
                     Log.e(TAG, "translateBatch: parse error - ${e.message}", e)
                     lastException = e

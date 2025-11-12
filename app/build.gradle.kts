@@ -44,8 +44,8 @@ android {
 
     defaultConfig {
         applicationId = "my.noveldokusha"
-        versionCode = 24
-        versionName = "2.3.5"
+        versionCode = 25
+        versionName = "2.3.6"
         setProperty("archivesBaseName", "WebnovelReader_v$versionName")
     }
 

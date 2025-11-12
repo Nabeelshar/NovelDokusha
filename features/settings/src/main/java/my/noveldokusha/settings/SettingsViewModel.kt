@@ -67,6 +67,7 @@ internal class SettingsViewModel @Inject constructor(
             )
         ),
         geminiApiKey = appPreferences.TRANSLATION_GEMINI_API_KEY.state(viewModelScope),
+        geminiModel = appPreferences.TRANSLATION_GEMINI_MODEL.state(viewModelScope),
         preferOnlineTranslation = appPreferences.TRANSLATION_PREFER_ONLINE.state(viewModelScope),
     )
 
@@ -120,6 +121,10 @@ internal class SettingsViewModel @Inject constructor(
 
     fun onGeminiApiKeyChange(apiKey: String) {
         appPreferences.TRANSLATION_GEMINI_API_KEY.value = apiKey
+    }
+
+    fun onGeminiModelChange(model: String) {
+        appPreferences.TRANSLATION_GEMINI_MODEL.value = model
     }
 
     fun onPreferOnlineTranslationChange(prefer: Boolean) {
