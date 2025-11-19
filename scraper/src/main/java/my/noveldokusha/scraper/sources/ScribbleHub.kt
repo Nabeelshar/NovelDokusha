@@ -66,7 +66,7 @@ class ScribbleHub(
         withContext(Dispatchers.Default) {
             tryConnect {
                 // Extract series ID from URL
-                val seriesId = bookUrl.split("/").lastOrNull { it.isNotEmpty() }
+                val seriesId = Regex("series/(\\d+)/").find(bookUrl)?.groupValues?.get(1)
                     ?: throw Exception("Invalid book URL")
 
                 val url = baseUrl.toUrlBuilderSafe()
@@ -128,12 +128,14 @@ class ScribbleHub(
     ): Response<PagedList<BookResult>> =
         withContext(Dispatchers.Default) {
             tryConnect {
-                if (input.isBlank() || index > 0)
+                if (input.isBlank())
                     return@tryConnect PagedList.createEmpty(index = index)
 
+                val page = index + 1
                 val url = baseUrl.toUrlBuilderSafe()
                     .add("s", input)
                     .add("post_type", "fictionposts")
+                    .add("paged", page.toString())
                     .toString()
 
                 val doc = networkClient.get(url).toDocument()
@@ -154,7 +156,7 @@ class ScribbleHub(
                 PagedList(
                     list = books,
                     index = index,
-                    isLastPage = true
+                    isLastPage = books.isEmpty()
                 )
             }
         }

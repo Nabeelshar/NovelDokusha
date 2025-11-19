@@ -49,9 +49,9 @@ class NovelBin(private val networkClient: NetworkClient) : SourceInterface.Catal
                 networkClient.get(url).toDocument().run {
                     val isLastPage = select("ul.pagination li.next.disabled").isNotEmpty()
                     val bookResults =
-                        select("#list-page div.list-novel .row").mapNotNull {
-                            val link = it.selectFirst("div.col-xs-7 a") ?: return@mapNotNull null
-                            val elements = it.select("div.col-xs-3 > div > img")
+                        select("#list-page .list-novel .row > div").mapNotNull {
+                            val link = it.selectFirst(".novel-title a") ?: return@mapNotNull null
+                            val elements = it.select("img")
                             val value = getAttributePriority(elements, "src", "data-src").toString()
                             BookResult(
                                 title = link.attr("title"),
@@ -76,11 +76,9 @@ class NovelBin(private val networkClient: NetworkClient) : SourceInterface.Catal
     override suspend fun getBookCoverImageUrl(bookUrl: String): Response<String?> =
         withContext(Dispatchers.Default) {
             tryConnect {
-                networkClient
-                    .get(bookUrl)
-                    .toDocument()
-                    .selectFirst("meta[itemprop=image]")
-                    ?.attr("content")
+                val doc = networkClient.get(bookUrl).toDocument()
+                doc.selectFirst("meta[itemprop=image]")?.attr("content")
+                    ?: doc.selectFirst(".book img")?.attr("src")
             }
         }
 

@@ -14,6 +14,17 @@ class BoxNovel(
     override val catalogUrl = "https://novlove.com/novel?page=1"
     override val iconUrl = "https://novlove.com/favicon.ico"
     override val language = LanguageCode.ENGLISH
+
+    // BoxNovel-specific selectors to avoid garbage
+    override val selectCatalogItems = ".list-novel .row > div"
+    override val selectCatalogItemTitle = ".novel-title a"
+    override val selectCatalogItemCover = ".cover img"
+    override val selectPaginationLastPage = "ul.pagination li:last-child"
+
+    override fun isLastPage(doc: org.jsoup.nodes.Document): Boolean {
+        val lastLi = doc.selectFirst(selectPaginationLastPage)
+        return lastLi == null || lastLi.hasClass("disabled")
+    }
     
     override fun buildCatalogUrl(index: Int): String {
         val page = index + 1

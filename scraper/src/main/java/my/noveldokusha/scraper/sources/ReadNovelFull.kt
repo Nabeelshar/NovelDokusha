@@ -22,9 +22,17 @@ class ReadNovelFull(
     override val language = LanguageCode.ENGLISH
 
     // ReadNovelFull-specific catalog structure
-    override val selectCatalogItems = ".col-novel-main.archive .row"
+    override val selectCatalogItems = ".list-novel .row > div"
+    override val selectCatalogItemTitle = ".novel-title a"
+    override val selectCatalogItemCover = ".cover img"
+    override val selectPaginationLastPage = "ul.pagination li:last-child"
     
     // Specific ajax settings
     override val novelIdSelector = "#rating[data-novel-id]"
     override val ajaxChapterPath = "ajax/chapter-archive"
+
+    override fun isLastPage(doc: Document): Boolean {
+        val lastLi = doc.selectFirst(selectPaginationLastPage)
+        return lastLi == null || lastLi.hasClass("disabled")
+    }
 }

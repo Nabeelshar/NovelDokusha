@@ -138,10 +138,11 @@ class RoyalRoad(
         input: String
     ): Response<PagedList<BookResult>> = withContext(Dispatchers.Default) {
         tryConnect {
-            if (input.isBlank() || index > 0)
+            if (input.isBlank())
                 return@tryConnect PagedList.createEmpty(index = index)
 
-            val request = getRequest("https://www.royalroad.com/fictions/search?title=${input}")
+            val page = index + 1
+            val request = getRequest("https://www.royalroad.com/fictions/search?title=${input}&page=$page")
                 .addHeader("accept", "*/*")
                 .addHeader("accept-encoding", "gzip, deflate, br")
                 .addHeader(
@@ -159,11 +160,10 @@ class RoyalRoad(
                 .addHeader("sec-fetch-site", "same-origin")
                 .addHeader("x-requested-with", "XMLHttpRequest")
 
-            val fictionListItems = networkClient.call(request)
-                .toDocument()
-                .select(".fiction-list-item")
+            val doc = networkClient.call(request).toDocument()
+            val fictionListItems = doc.select(".fiction-list-item")
 
-            fictionListItems.mapNotNull {
+            val list = fictionListItems.mapNotNull {
                     val link = it.select("a[href]").getOrNull(1) ?: return@mapNotNull null
                     val bookCover = it.selectFirst("img[src]")?.attr("src") ?: ""
                 BookResult(
@@ -171,14 +171,16 @@ class RoyalRoad(
                     url = URI(baseUrl).resolve(link.attr("href")).toString(),
                     coverImageUrl = bookCover
                 )
+            }
+
+            PagedList(
+                list = list,
+                index = index,
+                isLastPage = when (val nav = doc.selectFirst("ul.pagination")) {
+                    null -> true
+                    else -> nav.children().last()?.`is`(".active") ?: true
                 }
-                .let {
-                    PagedList(
-                        list = it,
-                        index = index,
-                        isLastPage = true
-                    )
-                }
+            )
         }
     }
 }
