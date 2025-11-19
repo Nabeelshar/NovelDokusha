@@ -256,7 +256,7 @@ internal class ReaderLiveTranslation(
     }
     
     /**
-     * Get batch translator if available (Gemini only)
+     * Get batch translator if available (Gemini, Composite, or GoogleFree)
      * Returns null for MLKit which doesn't support batch translation
      */
     fun getBatchTranslator(): (suspend (List<String>) -> Map<String, String>)? {
@@ -266,18 +266,27 @@ internal class ReaderLiveTranslation(
         val source = translatorState?.source ?: return null
         val target = translatorState?.target ?: return null
         
-        // Try to get Gemini manager and call translateBatch directly
+        // Try to get batch translator from Composite, Gemini, or GoogleFree managers
         return try {
-            val geminiClass = Class.forName("my.noveldokusha.text_translator.TranslationManagerGemini")
-            if (!geminiClass.isInstance(translationManager)) {
-                Log.d(TAG, "getBatchTranslator: translator is not Gemini")
-                return null
+            // Try Composite first (FOSS version), then Gemini, then GoogleFree
+            val compositeClass = try { Class.forName("my.noveldokusha.text_translator.TranslationManagerComposite") } catch (e: Exception) { null }
+            val geminiClass = try { Class.forName("my.noveldokusha.text_translator.TranslationManagerGemini") } catch (e: Exception) { null }
+            val googleFreeClass = try { Class.forName("my.noveldokusha.text_translator.TranslationManagerGoogleFree") } catch (e: Exception) { null }
+            
+            val managerClass = when {
+                compositeClass?.isInstance(translationManager) == true -> compositeClass
+                geminiClass?.isInstance(translationManager) == true -> geminiClass
+                googleFreeClass?.isInstance(translationManager) == true -> googleFreeClass
+                else -> {
+                    Log.d(TAG, "getBatchTranslator: translator is ${translationManager.javaClass.simpleName}, batch not supported")
+                    return null
+                }
             }
             
-            Log.d(TAG, "getBatchTranslator: found Gemini translator, creating batch wrapper")
+            Log.d(TAG, "getBatchTranslator: found ${managerClass.simpleName}, creating batch wrapper")
             
-            // Create wrapper that calls translateBatch using callSuspend
-            val kClass = geminiClass.kotlin
+            // Get translateBatch function using reflection
+            val kClass = managerClass.kotlin
             val translateBatchFunc = kClass.members
                 .filterIsInstance<kotlin.reflect.KFunction<*>>()
                 .find { func -> 
@@ -291,7 +300,6 @@ internal class ReaderLiveTranslation(
             val batchTranslator: suspend (List<String>) -> Map<String, String> = { texts ->
                 @Suppress("UNCHECKED_CAST")
                 try {
-                    // Call using callSuspend which handles suspend functions without explicit continuation
                     (translateBatchFunc as kotlin.reflect.KSuspendFunction4<Any, List<String>, String, String, Map<String, String>>)
                         .invoke(translationManager, texts, source, target)
                 } catch (e: Exception) {

@@ -86,28 +86,13 @@ android {
         }
     }
 
-    productFlavors {
-        flavorDimensions.add("dependencies")
-        create("full") {
-            dimension = "dependencies"
-        }
-
-        create("foss") {
-            dimension = "dependencies"
-        }
-    }
+    // Removed product flavors - using FOSS (Gemini API only) for all builds
 
     buildFeatures {
         viewBinding = true
     }
     namespace = "my.noveldokusha"
 }
-
-fun DependencyHandler.fullImplementation(dependencyNotation: Any): Dependency? =
-    add("fullImplementation", dependencyNotation)
-
-fun DependencyHandler.fossImplementation(dependencyNotation: Any): Dependency? =
-    add("fossImplementation", dependencyNotation)
 
 dependencies {
 
@@ -137,9 +122,8 @@ dependencies {
     implementation(projects.strings)
     implementation(projects.scraper)
 
-    // Translation feature
-    fullImplementation(projects.tooling.textTranslator.translator)
-    fossImplementation(projects.tooling.textTranslator.translatorNop)
+    // Translation feature (FOSS - Gemini API only)
+    implementation(projects.tooling.textTranslator.translatorNop)
 
     // Kotlin
     implementation(libs.kotlinx.coroutines.core)

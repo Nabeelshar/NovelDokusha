@@ -43,10 +43,24 @@ internal fun SettingsGeminiTranslation(
     
     Column {
         Text(
-            text = "Gemini Translation",
+            text = "Translation Services",
             style = MaterialTheme.typography.titleMedium,
             modifier = Modifier.textPadding(),
             color = ColorAccent
+        )
+        
+        // Show active service
+        Text(
+            text = if (geminiApiKey.isNotBlank() && preferOnlineTranslation) 
+                "Active: Google Gemini API" 
+            else 
+                "Active: Google Translate (Free)",
+            style = MaterialTheme.typography.bodyMedium,
+            modifier = Modifier.textPadding(),
+            color = if (geminiApiKey.isNotBlank() && preferOnlineTranslation)
+                MaterialTheme.colorScheme.primary
+            else
+                MaterialTheme.colorScheme.secondary
         )
         
         ListItem(
@@ -83,7 +97,8 @@ internal fun SettingsGeminiTranslation(
                     Spacer(modifier = Modifier.height(4.dp))
                     Text(
                         text = "Get your free API key at: ai.google.dev\n" +
-                               "Tip: Enter multiple API keys (one per line or separated by semicolon) to avoid rate limits",
+                               "Tip: Enter multiple API keys (one per line or separated by semicolon) to avoid rate limits\n\n" +
+                               "Note: If no API key is provided, the app will automatically use Google Translate (Free) instead.",
                         style = MaterialTheme.typography.bodySmall,
                         color = MaterialTheme.colorScheme.onSurfaceVariant
                     )
@@ -128,12 +143,17 @@ internal fun SettingsGeminiTranslation(
         
         ListItem(
             headlineContent = {
-                Text(text = "Prefer Online Translation")
+                Text(text = "Use Gemini API")
             },
             supportingContent = {
                 Text(
-                    text = "Use Gemini (online) for translation when available. " +
-                            "Falls back to offline models if Gemini fails or API key is not configured.",
+                    text = if (apiKeyText.isNotBlank()) {
+                        "When enabled, uses Google Gemini API for higher quality translations. " +
+                        "When disabled or if API key is not set, uses free Google Translate instead."
+                    } else {
+                        "Configure Gemini API key above to enable this option. " +
+                        "Currently using Google Translate (Free) - no API key required."
+                    },
                     style = MaterialTheme.typography.bodySmall
                 )
             },

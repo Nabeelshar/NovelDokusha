@@ -38,7 +38,7 @@ class ScraperNetworkClient @Inject constructor(
     private val okhttpLoggingInterceptor = HttpLoggingInterceptor {
         Timber.v(it)
     }.apply {
-        level = HttpLoggingInterceptor.Level.BODY
+        level = HttpLoggingInterceptor.Level.HEADERS
     }
 
     val client = OkHttpClient.Builder()

@@ -14,4 +14,7 @@ dependencies {
     
     // OkHttp for Gemini API calls
     implementation(libs.okhttp)
+    
+    // Free Google Translate library
+    implementation("com.github.therealbush:translator:1.1.1")
 }

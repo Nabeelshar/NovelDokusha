@@ -11,3 +11,9 @@
 /word_database-shm
 /word_database-wal
 /app/release
+
+# Keystore files - DO NOT commit these!
+*.jks
+*.keystore
+keychain
+key.properties

@@ -33,6 +33,7 @@ import my.noveldokusha.scraper.sources.NoBadNovel
 import my.noveldokusha.scraper.sources.FanMTL
 import my.noveldokusha.scraper.sources.LNMTL
 import my.noveldokusha.scraper.sources.WtrLab
+import my.noveldokusha.scraper.sources.Jaomix
 import my.noveldokusha.scraper.sources.Shuba69
 import my.noveldokusha.scraper.sources.UuKanshu
 import my.noveldokusha.scraper.sources.Ddxss
@@ -90,6 +91,7 @@ class Scraper @Inject constructor(
         FanMTL(networkClient),
         LNMTL(networkClient),
         WtrLab(networkClient),
+        Jaomix(networkClient),
     )
 
     val sourcesCatalogsList = sourcesList.filterIsInstance<SourceInterface.Catalog>()
