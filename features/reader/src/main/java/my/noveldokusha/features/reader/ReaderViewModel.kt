@@ -2,10 +2,13 @@ package my.noveldokusha.features.reader
 
 import androidx.compose.runtime.derivedStateOf
 import androidx.compose.runtime.mutableStateOf
+import androidx.compose.runtime.snapshotFlow
 import androidx.lifecycle.SavedStateHandle
 import androidx.lifecycle.viewModelScope
 import dagger.hilt.android.lifecycle.HiltViewModel
 import kotlinx.coroutines.Dispatchers
+import kotlinx.coroutines.flow.collectLatest
+import kotlinx.coroutines.launch
 import kotlinx.coroutines.withContext
 import my.noveldoksuha.coreui.BaseViewModel
 import my.noveldoksuha.coreui.mappers.toTheme
@@ -79,6 +82,15 @@ internal class ReaderViewModel @Inject constructor(
             withContext(Dispatchers.Main) {
                 state.showInvalidChapterDialog.value = true
             }
+        }
+
+        viewModelScope.launch {
+            snapshotFlow { readingPosStats.value?.chapterUrl }
+                .collectLatest { newChapterUrl ->
+                    if (!newChapterUrl.isNullOrEmpty()) {
+                        chapterUrl = newChapterUrl
+                    }
+                }
         }
     }
 
