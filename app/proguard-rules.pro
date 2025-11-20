@@ -67,3 +67,8 @@
     public static *** v(...);
     public static *** i(...);
 }
+
+# Keep Translation Managers accessed via reflection in ReaderLiveTranslation
+-keep class my.noveldokusha.text_translator.TranslationManagerComposite { *; }
+-keep class my.noveldokusha.text_translator.TranslationManagerGemini { *; }
+-keep class my.noveldokusha.text_translator.TranslationManagerGoogleFree { *; }
