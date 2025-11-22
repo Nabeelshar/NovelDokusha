@@ -8,6 +8,8 @@ import my.noveldokusha.core.Response
 import my.noveldokusha.network.NetworkClient
 import my.noveldokusha.network.add
 import my.noveldokusha.network.addPath
+import my.noveldokusha.network.getRequest      // ← Tambahkan
+import my.noveldokusha.network.postPayload     // ← Tambahkan
 import my.noveldokusha.network.toDocument
 import my.noveldokusha.network.toUrlBuilderSafe
 import my.noveldokusha.network.tryConnect
@@ -16,6 +18,7 @@ import my.noveldokusha.scraper.SourceInterface
 import my.noveldokusha.scraper.TextExtractor
 import my.noveldokusha.scraper.domain.BookResult
 import my.noveldokusha.scraper.domain.ChapterResult
+import okhttp3.Request  // ← Masih perlu untuk .build()
 import org.jsoup.nodes.Document
 
 class ScribbleHub(
@@ -65,20 +68,32 @@ class ScribbleHub(
     override suspend fun getChapterList(bookUrl: String): Response<List<ChapterResult>> =
         withContext(Dispatchers.Default) {
             tryConnect {
-                // Extract series ID from URL
                 val seriesId = Regex("series/(\\d+)/").find(bookUrl)?.groupValues?.get(1)
                     ?: throw Exception("Invalid book URL")
-
-                val url = baseUrl.toUrlBuilderSafe()
+                
+                val ajaxUrl = baseUrl.toUrlBuilderSafe()
                     .addPath("wp-admin", "admin-ajax.php")
-                    .add("action", "wi_getreleases_pagination")
-                    .add("pagenum", "-1")
-                    .add("mypostid", seriesId)
+                    .build()
                     .toString()
-
-                networkClient.get(url)
+                
+                // ✅ Versi sederhana menggunakan extension function
+                val request = getRequest(ajaxUrl)
+                    .postPayload {
+                        add("action", "wi_getreleases_pagination")
+                        add("pagenum", "-1")
+                        add("mypostid", seriesId)
+                    }
+                    .header("X-Requested-With", "XMLHttpRequest")
+                    .header("Origin", "https://www.scribblehub.com")
+                    .header("Referer", bookUrl)
+                    .header("Accept", "*/*")
+                    .header("Accept-Language", "en-US,en;q=0.9")
+                    .build()
+          
+                networkClient.call(request = request.newBuilder(), followRedirects = false)
                     .toDocument()
                     .select(".toc_w a[href]")
+                    .reversed()
                     .map { element ->
                         ChapterResult(
                             title = element.text(),
