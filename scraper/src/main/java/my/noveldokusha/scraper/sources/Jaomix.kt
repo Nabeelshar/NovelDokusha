@@ -24,7 +24,7 @@ class Jaomix(private val networkClient: NetworkClient) : SourceInterface.Catalog
     override val baseUrl = "https://jaomix.ru/"
     override val catalogUrl = "https://jaomix.ru/"
     override val iconUrl = "https://jaomix.ru/wp-content/uploads/2019/08/cropped-logo-2-150x150.png"
-    override val language = null // LanguageCode.RUSSIAN not defined
+    override val language = LanguageCode.RUSSIAN
 
     private suspend fun getPagesList(index: Int, url: String) =
         withContext(Dispatchers.Default) {
@@ -42,7 +42,7 @@ class Jaomix(private val networkClient: NetworkClient) : SourceInterface.Catalog
                                 coverImageUrl = bookCover
                             )
                         }
-                    PagedList(list = bookResults, index = index, isLastPage = isLastPage)
+                    PagedList(list = bookResults, index = index, isLastPage = !isLastPage)
                 }
             }
         }

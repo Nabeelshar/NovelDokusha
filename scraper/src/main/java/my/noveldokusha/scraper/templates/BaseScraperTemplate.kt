@@ -18,7 +18,7 @@ import org.jsoup.nodes.Element
 /**
  * Base abstract scraper template that implements common functionality for web novel sites.
  * Concrete scrapers extend this and provide CSS selectors for their specific site layout.
- * 
+ *
  * This follows the template method pattern similar to lightnovel-crawler's Python templates.
  */
 abstract class BaseScraperTemplate(
@@ -43,13 +43,13 @@ abstract class BaseScraperTemplate(
     protected open val selectSearchItemCover: String? = null
 
     // Optional transformations
-    protected open fun transformBookUrl(url: String): String = 
+    protected open fun transformBookUrl(url: String): String =
         if (url.startsWith("http")) url else baseUrl + url.removePrefix("/")
-    
-    protected open fun chapterUrlTransform(url: String): String = 
+
+    protected open fun chapterUrlTransform(url: String): String =
         if (url.startsWith("http")) url else baseUrl + url.removePrefix("/")
-    
-    protected open fun transformCoverUrl(url: String): String = 
+
+    protected open fun transformCoverUrl(url: String): String =
         if (url.startsWith("http")) url else baseUrl + url.removePrefix("/")
 
     // Template methods with default implementations
@@ -126,13 +126,13 @@ abstract class BaseScraperTemplate(
     protected abstract fun buildCatalogUrl(index: Int): String
     protected abstract fun buildSearchUrl(index: Int, input: String): String
 
-    protected open suspend fun parseCatalogPage(doc: Document, index: Int): Response<PagedList<BookResult>> = 
+    protected open suspend fun parseCatalogPage(doc: Document, index: Int): Response<PagedList<BookResult>> =
         withContext(Dispatchers.Default) {
             tryConnect {
                 val books = doc.select(selectCatalogItems).mapNotNull { element ->
                     parseCatalogItem(element)
                 }
-                
+
                 PagedList(
                     list = books,
                     index = index,
@@ -141,26 +141,26 @@ abstract class BaseScraperTemplate(
             }
         }
 
-    protected open suspend fun parseSearchPage(doc: Document, index: Int, query: String): Response<PagedList<BookResult>> = 
+    protected open suspend fun parseSearchPage(doc: Document, index: Int, query: String): Response<PagedList<BookResult>> =
         withContext(Dispatchers.Default) {
             val searchItems = selectSearchItems ?: selectCatalogItems
             val searchTitle = selectSearchItemTitle ?: selectCatalogItemTitle
             val searchUrl = selectSearchItemUrl ?: selectCatalogItemUrl
             val searchCover = selectSearchItemCover ?: selectCatalogItemCover
-            
+
             tryConnect {
                 val books = doc.select(searchItems).mapNotNull { element ->
                     val title = element.selectFirst(searchTitle)?.text() ?: return@mapNotNull null
                     val url = element.selectFirst(searchUrl)?.attr("href") ?: return@mapNotNull null
                     val cover = element.selectFirst(searchCover)?.let { extractImageUrl(it) } ?: ""
-                    
+
                     BookResult(
                         title = title,
                         url = transformBookUrl(url),
-                        coverImageUrl = transformCoverUrl(cover)
+                        coverImageUrl = processImageUrlWhen(transformCoverUrl(cover))
                     )
                 }
-                
+
                 PagedList(
                     list = books,
                     index = index,
@@ -173,11 +173,11 @@ abstract class BaseScraperTemplate(
         val title = element.selectFirst(selectCatalogItemTitle)?.text() ?: return null
         val url = element.selectFirst(selectCatalogItemUrl)?.attr("href") ?: return null
         val cover = element.selectFirst(selectCatalogItemCover)?.let { extractImageUrl(it) } ?: ""
-        
+
         return BookResult(
             title = title,
             url = transformBookUrl(url),
-            coverImageUrl = transformCoverUrl(cover)
+            coverImageUrl = processImageUrlWhen(transformCoverUrl(cover))
         )
     }
 
@@ -189,7 +189,15 @@ abstract class BaseScraperTemplate(
             } ?: true
         } ?: true
     }
-
+    // Fix cover image size, not work to NovelFull, AllNovel
+    fun processImageUrlWhen(coverImageUrl: String?): String {
+        if (coverImageUrl == null) return ""
+        return when {
+            coverImageUrl.contains("novel_200_89") -> coverImageUrl.replace("novel_200_89", "novel")
+            coverImageUrl.contains("t-200x89") -> coverImageUrl.replace("t-200x89", "t-300x439")
+            else -> coverImageUrl
+        }
+    }
     protected fun extractImageUrl(element: Element): String {
         return when {
             element.hasAttr("data-src") -> element.attr("data-src")
