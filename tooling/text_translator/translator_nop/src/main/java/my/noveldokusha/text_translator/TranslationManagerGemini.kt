@@ -52,7 +52,7 @@ class TranslationManagerGemini(
 
     // Cache for batch translations to avoid re-translating same chapter
     private val translationCache = mutableMapOf<String, String>()
-    
+
     // Gemini supports many languages without needing model downloads
     override val models = mutableStateListOf<TranslationModelState>().apply {
         // Common languages supported by Gemini
@@ -61,7 +61,7 @@ class TranslationManagerGemini(
             "ar", "hi", "th", "vi", "id", "tr", "pl", "nl", "sv", "da",
             "fi", "no", "cs", "el", "he", "ro", "hu", "uk", "bg", "hr"
         )
-        
+
         addAll(supportedLanguages.map { lang ->
             TranslationModelState(
                 language = lang,
@@ -98,13 +98,13 @@ class TranslationManagerGemini(
             Log.d(TAG, "translateWithGemini: using cached translation")
             return@withContext it
         }
-        
+
         val availableKeys = apiKeys
-        
+
         Log.d(TAG, "translateWithGemini: starting translation")
         Log.d(TAG, "  source=$sourceLanguage, target=$targetLanguage")
         Log.d(TAG, "  textLength=${text.length}, apiKeysAvailable=${availableKeys.size}")
-        
+
         if (availableKeys.isEmpty()) {
             Log.e(TAG, "translateWithGemini: No API keys configured!")
             return@withContext "[Translation unavailable: Gemini API key not configured. Please add your API key in Settings → Gemini Translation]"
@@ -148,12 +148,12 @@ class TranslationManagerGemini(
 
         var lastException: Exception? = null
         val totalAttempts = retryCount * availableKeys.size // Try each key multiple times
-        
+
         repeat(totalAttempts) { attempt ->
             // Rotate through API keys on each attempt
             val currentApiKey = availableKeys[attempt % availableKeys.size]
             val attemptWithinKey = attempt / availableKeys.size + 1
-            
+
             try {
                 val jsonBody = JSONObject().apply {
                     put("contents", JSONArray().apply {
@@ -184,10 +184,10 @@ class TranslationManagerGemini(
 
                 Log.d(TAG, "translateWithGemini: sending request (attempt ${attempt + 1}/$totalAttempts, key ${(attempt % availableKeys.size) + 1}/${availableKeys.size})")
                 val response = client.newCall(request).execute()
-                
+
                 val code = response.code
                 Log.d(TAG, "translateWithGemini: received response code=$code")
-                
+
                 when (code) {
                     429 -> {
                         // Rate limit hit - rotate to next API key immediately
@@ -252,7 +252,7 @@ class TranslationManagerGemini(
                             } else ""
                         } else ""
                     }
-                    
+
                     if (translatedText.isNotEmpty()) {
                         Log.d(TAG, "translateWithGemini: success, result length=${translatedText.length}")
                         // Cache the result
@@ -280,7 +280,7 @@ class TranslationManagerGemini(
                 }
             }
         }
-        
+
         return@withContext "[Translation failed after $retryCount attempts]"
     }
 
@@ -288,15 +288,15 @@ class TranslationManagerGemini(
      * Translate multiple paragraphs at once for efficiency
      * Returns map of original text to translated text
      */
-    suspend fun translateBatch(
+    override suspend fun translateBatch(
         texts: List<String>,
         sourceLanguage: String,
         targetLanguage: String
     ): Map<String, String> = withContext(Dispatchers.IO) {
         if (texts.isEmpty()) return@withContext emptyMap()
-        
+
         Log.d(TAG, "translateBatch: translating ${texts.size} paragraphs at once")
-        
+
         // Validate API keys
         val availableKeys = apiKeys
         if (availableKeys.isEmpty()) {
@@ -347,11 +347,11 @@ class TranslationManagerGemini(
         var lastException: Exception? = null
         val retryCount = 3
         val totalAttempts = retryCount * availableKeys.size
-        
+
         repeat(totalAttempts) { attempt ->
             val currentApiKey = availableKeys[attempt % availableKeys.size]
             val attemptWithinKey = attempt / availableKeys.size + 1
-            
+
             try {
                 val jsonBody = JSONObject().apply {
                     put("contents", JSONArray().apply {
@@ -382,10 +382,10 @@ class TranslationManagerGemini(
 
                 Log.d(TAG, "translateBatch: sending request (attempt ${attempt + 1}/$totalAttempts, key ${(attempt % availableKeys.size) + 1}/${availableKeys.size})")
                 val response = client.newCall(request).execute()
-                
+
                 val code = response.code
                 Log.d(TAG, "translateBatch: received response code=$code")
-                
+
                 when (code) {
                     429 -> {
                         Log.w(TAG, "translateBatch: Rate limit (429) on key ${(attempt % availableKeys.size) + 1}, rotating to next key")
@@ -445,16 +445,16 @@ class TranslationManagerGemini(
                             } else ""
                         } else ""
                     }
-                    
+
                     if (translatedText.isNotEmpty()) {
                         Log.d(TAG, "translateBatch: success, parsing ${texts.size} translations")
-                        
+
                         // Parse numbered translations back into map
                         val translations = mutableMapOf<String, String>()
                         val lines = translatedText.split("\n").filter { it.isNotBlank() }
                         var currentIndex = 0
                         var currentTranslation = StringBuilder()
-                        
+
                         for (line in lines) {
                             val numberMatch = Regex("^(\\d+)\\.\\s*").find(line)
                             if (numberMatch != null) {
@@ -476,7 +476,7 @@ class TranslationManagerGemini(
                                 currentTranslation.append(line.trim())
                             }
                         }
-                        
+
                         // Add last translation
                         if (currentTranslation.isNotEmpty() && currentIndex > 0) {
                             val originalText = texts.getOrNull(currentIndex - 1)
@@ -484,14 +484,14 @@ class TranslationManagerGemini(
                                 translations[originalText] = currentTranslation.toString().trim()
                             }
                         }
-                        
+
                         // Fill in any missing translations with originals
                         texts.forEach { text ->
                             if (!translations.containsKey(text)) {
                                 translations[text] = text
                             }
                         }
-                        
+
                         Log.d(TAG, "translateBatch: parsed ${translations.size} translations")
                         return@withContext translations
                     } else {
@@ -514,7 +514,7 @@ class TranslationManagerGemini(
                 }
             }
         }
-        
+
         Log.e(TAG, "translateBatch: failed after $retryCount attempts")
         return@withContext texts.associateWith { "[Translation failed]" }
     }

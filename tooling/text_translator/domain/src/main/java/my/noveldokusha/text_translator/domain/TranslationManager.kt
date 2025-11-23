@@ -24,7 +24,7 @@ data class TranslatorState(
 interface TranslationManager {
 
     val available: Boolean
-    
+
     val isUsingOnlineTranslation: Boolean get() = false
 
     val models: SnapshotStateList<TranslationModelState>
@@ -41,4 +41,9 @@ interface TranslationManager {
     fun downloadModel(language: String)
 
     fun removeModel(language: String)
+    suspend fun translateBatch(
+        texts: List<String>,
+        sourceLanguage: String,
+        targetLanguage: String
+    ): Map<String, String>?
 }
