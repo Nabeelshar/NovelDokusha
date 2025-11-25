@@ -81,14 +81,12 @@ class Jaomix(private val networkClient: NetworkClient) : SourceInterface.Catalog
         tryConnect {
             networkClient.get(bookUrl)
                 .toDocument()
-                .select(".download-chapter div.title")
+                .select("div.title")
                 .map {
-                    ChapterResult(
-                        title = it.selectFirst("a")?.attr("title") ?: "",
-                        url = it.selectFirst("a")?.attr("href") ?: ""
-                    )
+                    ChapterResult(it.selectFirst("a")?.attr("title") ?: "", it.selectFirst("a")?.attr("href") ?: "")
                 }
                 .reversed()
+
         }
     }
 
