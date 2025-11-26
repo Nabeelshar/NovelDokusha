@@ -15,14 +15,16 @@ import my.noveldokusha.scraper.SourceInterface
 import my.noveldokusha.scraper.TextExtractor
 import my.noveldokusha.scraper.domain.BookResult
 import my.noveldokusha.scraper.domain.ChapterResult
+import org.jsoup.Jsoup
 import org.jsoup.nodes.Document
+
 
 class FreeWebNovel(
     private val networkClient: NetworkClient
 ) : SourceInterface.Catalog {
     override val id = "freewebnovel"
     override val nameStrId = R.string.source_name_freewebnovel
-    override val baseUrl = "https://freewebnovel.com/"
+    override val baseUrl = "https://freewebnovel.com"
     override val catalogUrl = "https://freewebnovel.com/completed-novel/"
     override val iconUrl = "https://freewebnovel.com/favicon.ico"
     override val language = LanguageCode.ENGLISH
@@ -48,9 +50,11 @@ class FreeWebNovel(
             tryConnect {
                 networkClient.get(bookUrl)
                     .toDocument()
-                    .selectFirst(".m-imgtxt img")
-                    ?.let { it.attr("data-src").ifEmpty { it.attr("src") } }
+                    .selectFirst(".pic img")?.attr("src")
+                    ?.let {baseUrl + it}
             }
+
+
         }
 
     override suspend fun getBookDescription(bookUrl: String): Response<String?> =
@@ -63,78 +67,80 @@ class FreeWebNovel(
             }
         }
 
-    override suspend fun getChapterList(bookUrl: String): Response<List<ChapterResult>> =
-        withContext(Dispatchers.Default) {
-            tryConnect {
-                networkClient.get(bookUrl)
-                    .toDocument()
-                    .select("#idData li a")
-                    .map { element ->
-                        ChapterResult(
-                            title = element.text(),
-                            url = element.attr("href")
-                        )
-                    }
-            }
+
+    override suspend fun getChapterList(
+        bookUrl: String
+    ): Response<List<ChapterResult>> = withContext(Dispatchers.Default) {
+        tryConnect {
+            networkClient.get(bookUrl)
+                .toDocument()
+                .select("#idData li a")
+                .map {
+                    ChapterResult(
+                        title = it.selectFirst("a")?.attr("title") ?: "",
+                        url = (baseUrl + it.selectFirst("a")?.attr("href"))
+                    )
+                }
         }
+    }
 
     override suspend fun getCatalogList(index: Int): Response<PagedList<BookResult>> =
         withContext(Dispatchers.Default) {
-            tryConnect {
-                if (index > 0)
-                    return@tryConnect PagedList.createEmpty(index = index)
+            tryConnect("index=$index") {
+                val page = index + 1
+                val url = "$baseUrl/completed-novel/$page"
 
-                val doc = networkClient.get(catalogUrl).toDocument()
+                val doc = networkClient.get(url).toDocument()
                 val books = doc.select(".ul-list1 .li-row")
                     .mapNotNull { element ->
                         val link = element.selectFirst(".tit a") ?: return@mapNotNull null
                         val coverUrl = element.selectFirst(".pic img")
                             ?.let { it.attr("data-src").ifEmpty { it.attr("src") } } ?: ""
-
                         BookResult(
                             title = link.text(),
-                            url = link.attr("href"),
-                            coverImageUrl = coverUrl
+                            url = baseUrl + link.attr("href"),
+                            coverImageUrl = baseUrl + coverUrl
                         )
                     }
 
                 PagedList(
                     list = books,
                     index = index,
-                    isLastPage = true
+                    isLastPage =  books.isEmpty() || doc.selectFirst("a:nth-child(13)") == null
+
                 )
             }
         }
+
 
     override suspend fun getCatalogSearch(
         index: Int,
         input: String
     ): Response<PagedList<BookResult>> =
-        withContext(Dispatchers.Default) {
+        withContext(Dispatchers.IO) {
             tryConnect {
                 if (input.isBlank() || index > 0)
                     return@tryConnect PagedList.createEmpty(index = index)
-
-                val request = postRequest("${baseUrl}search/")
-                    .postPayload {
-                        add("searchkey", input)
-                    }
-
-                val doc = networkClient.call(request).toDocument()
-                val books = doc.select(".col-content .con .txt h3 a")
-                    .map { element ->
+                val url = "https://freewebnovel.com/search"
+                val doc: Document = Jsoup.connect(url)
+                    .userAgent("Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/125.0.0.0 Safari/537.36")
+                    .data("searchkey", input)
+                    .timeout(10000)
+                    .post()
+                val books = doc.select(".ul-list1 .li-row")
+                    .mapNotNull { element ->
+                        val link = element.selectFirst(".tit a") ?: return@mapNotNull null
+                        val coverUrl = element.selectFirst(".pic img")
+                            ?.let { it.attr("data-src").ifEmpty { it.attr("src") } } ?: ""
                         BookResult(
-                            title = element.text(),
-                            url = element.attr("href"),
-                            coverImageUrl = ""
+                            title = link.text(),
+                            url = baseUrl + link.attr("href"),
+                            coverImageUrl = baseUrl + coverUrl
                         )
                     }
 
-                PagedList(
-                    list = books,
-                    index = index,
-                    isLastPage = true
-                )
+                PagedList(list = books, index = index, isLastPage = books.isEmpty())
             }
         }
+
 }

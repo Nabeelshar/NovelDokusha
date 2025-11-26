@@ -65,7 +65,7 @@ class TranslationManagerComposite(
                 Log.d(TAG, "getTranslator: using Gemini with Google Free fallback")
                 val geminiTranslator = geminiManager.getTranslator(source, target)
                 val googleFreeTranslator = googleFreeManager.getTranslator(source, target)
-                
+
                 TranslatorState(
                     source = source,
                     target = target,
@@ -76,7 +76,7 @@ class TranslationManagerComposite(
                             try {
                                 Log.d(TAG, "Gemini attempt ${attempt + 1}/2")
                                 val result = geminiTranslator.translate(input)
-                                
+
                                 // Check if result is an error message
                                 if (!result.startsWith("[Translation") && !result.startsWith("[API")) {
                                     Log.d(TAG, "Gemini translation succeeded")
@@ -92,7 +92,7 @@ class TranslationManagerComposite(
                                 }
                             }
                         }
-                        
+
                         // Fallback to Google Free
                         Log.w(TAG, "Gemini failed, falling back to Google Translate Free")
                         try {
@@ -106,7 +106,7 @@ class TranslationManagerComposite(
                     }
                 )
             }
-            
+
             // Use Google Translate Free if no API key or online not preferred
             else -> {
                 Log.d(TAG, "getTranslator: using Google Translate Free (${if (!hasApiKey) "no API key" else "offline preferred"})")
@@ -146,7 +146,7 @@ class TranslationManagerComposite(
     /**
      * Batch translation - delegates to active manager
      */
-    suspend fun translateBatch(
+    override suspend fun translateBatch(
         texts: List<String>,
         sourceLanguage: String,
         targetLanguage: String
@@ -162,7 +162,7 @@ class TranslationManagerComposite(
                 Log.e(TAG, "translateBatch: Gemini failed, falling back to Google Free", e)
             }
         }
-        
+
         Log.d(TAG, "translateBatch: using Google Translate Free")
         return@withContext googleFreeManager.translateBatch(texts, sourceLanguage, targetLanguage)
     }

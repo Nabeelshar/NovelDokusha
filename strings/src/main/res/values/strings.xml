@@ -168,6 +168,7 @@
     <string name="language_french">French</string>
     <string name="language_indonesian">Indonesian</string>
     <string name="language_chinese">Chinese</string>
+    <string name="language_russian">Russian</string>
     <string name="source_name_local">Local</string>
     <string name="source_name_ttkan">Ttkan</string>
     <string name="updating_library">Updating library (%1$d/%2$d)</string>
@@ -183,21 +184,21 @@
     <string name="backup_restored">Backup restored</string>
     <string name="keep_screen_on">Keep screen on</string>
     <string name="change_cover">Change cover</string>
-	<string name="app_updates">App updates</string>
+    <string name="app_updates">App updates</string>
     <string name="automatically_check_for_app_updates">Automatically check for app updates</string>
     <string name="check_for_app_updates_now">Check for app updates now</string>
-	<string name="you_already_have_the_last_version">You already have the last version</string>
+    <string name="you_already_have_the_last_version">You already have the last version</string>
     <string name="failed_to_check_last_app_version">Failed to check last app version</string>
-	<string name="download">Download</string>
-	<string name="new_app_version_found_s">New app version found %s</string>
-	<string name="automatically_check_for_library_updates">Automatically check for library updates</string>
-	<string name="library_update_interval_6_h">6 h</string>
+    <string name="download">Download</string>
+    <string name="new_app_version_found_s">New app version found %s</string>
+    <string name="automatically_check_for_library_updates">Automatically check for library updates</string>
+    <string name="library_update_interval_6_h">6 h</string>
     <string name="library_update_interval_12_h">12 h</string>
     <string name="library_update_interval_1_day">1 day</string>
     <string name="library_update_interval_2_days">2 days</string>
-	<string name="cloudfare_firewall_detected">Cloudfare firewall detected</string>
+    <string name="cloudfare_firewall_detected">Cloudfare firewall detected</string>
     <string name="please_open_web_view_and_try_verify_then_reload">Please open web view and try verify, then reload</string>
     <string name="cloudfare_firewall_failed_bypass">Cloudfare firewall failed bypass</string>
     <string name="tried_but_failed_to_bypass_cloudfare_firewall">Tried but failed to bypass cloudfare firewall</string>
-	<string name="features_reader_full_screen">Full screen</string>
+    <string name="features_reader_full_screen">Full screen</string>
 </resources>

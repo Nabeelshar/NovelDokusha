@@ -41,7 +41,7 @@ internal class ReaderLiveTranslation(
 ) {
     // Callback to clear chapter cache (set by ReaderSession)
     var onClearChapterCache: (() -> Unit)? = null
-    
+
     val state = LiveTranslationSettingData(
         isAvailable = translationManager.available,
         listOfAvailableModels = translationManager.models,
@@ -67,11 +67,11 @@ internal class ReaderLiveTranslation(
         val target = appPreferences.GLOBAL_TRANSLATION_PREFERRED_TARGET.value
         Log.d(TAG, "init: source=$source, target=$target")
         Log.d(TAG, "init: translationAvailable=${translationManager.available}")
-        
+
         state.source.value = getValidTranslatorOrNull(source)
         state.target.value = getValidTranslatorOrNull(target)
         Log.d(TAG, "init: sourceModel=${state.source.value?.language}, targetModel=${state.target.value?.language}")
-        
+
         updateTranslatorState()
         Log.d(TAG, "init: complete, translatorState=${translatorState != null}")
     }
@@ -200,11 +200,11 @@ internal class ReaderLiveTranslation(
                 }
 
                 Log.d(TAG, "onRedoTranslation: invalidating cache for source=$source, target=$target")
-                
+
                 // 1. Clear in-memory cache using reflection (for Gemini)
                 val methods = translationManager.javaClass.methods
                 val method = methods.find { it.name == "invalidateCacheFor" }
-                
+
                 if (method != null) {
                     try {
                         Log.d(TAG, "onRedoTranslation: found invalidateCacheFor method, invoking...")
@@ -243,7 +243,7 @@ internal class ReaderLiveTranslation(
                 translatorState = null
                 val update = updateTranslatorState()
                 Log.d(TAG, "onRedoTranslation: translator state updated, triggering reload")
-                
+
                 // Emit change event to trigger reader reload (same as language change)
                 if (update) {
                     _onTranslatorChanged.emit(Unit)
@@ -254,63 +254,19 @@ internal class ReaderLiveTranslation(
             }
         }
     }
-    
+
     /**
      * Get batch translator if available (Gemini, Composite, or GoogleFree)
      * Returns null for MLKit which doesn't support batch translation
      */
     fun getBatchTranslator(): (suspend (List<String>) -> Map<String, String>)? {
         if (!translationManager.isUsingOnlineTranslation) return null
-        if (translatorState == null) return null
-        
-        val source = translatorState?.source ?: return null
-        val target = translatorState?.target ?: return null
-        
-        // Try to get batch translator from Composite, Gemini, or GoogleFree managers
-        return try {
-            // Try Composite first (FOSS version), then Gemini, then GoogleFree
-            val compositeClass = try { Class.forName("my.noveldokusha.text_translator.TranslationManagerComposite") } catch (e: Exception) { null }
-            val geminiClass = try { Class.forName("my.noveldokusha.text_translator.TranslationManagerGemini") } catch (e: Exception) { null }
-            val googleFreeClass = try { Class.forName("my.noveldokusha.text_translator.TranslationManagerGoogleFree") } catch (e: Exception) { null }
-            
-            val managerClass = when {
-                compositeClass?.isInstance(translationManager) == true -> compositeClass
-                geminiClass?.isInstance(translationManager) == true -> geminiClass
-                googleFreeClass?.isInstance(translationManager) == true -> googleFreeClass
-                else -> {
-                    Log.d(TAG, "getBatchTranslator: translator is ${translationManager.javaClass.simpleName}, batch not supported")
-                    return null
-                }
-            }
-            
-            Log.d(TAG, "getBatchTranslator: found ${managerClass.simpleName}, creating batch wrapper")
-            
-            // Get translateBatch function using reflection
-            val kClass = managerClass.kotlin
-            val translateBatchFunc = kClass.members
-                .filterIsInstance<kotlin.reflect.KFunction<*>>()
-                .find { func -> 
-                    func.name == "translateBatch" && 
-                    func.parameters.size == 4  // this + 3 params (texts, source, target)
-                } as? kotlin.reflect.KSuspendFunction4<*, List<String>, String, String, Map<String, String>> ?: run {
-                    Log.e(TAG, "getBatchTranslator: translateBatch function not found")
-                    return null
-                }
-            
-            val batchTranslator: suspend (List<String>) -> Map<String, String> = { texts ->
-                @Suppress("UNCHECKED_CAST")
-                try {
-                    (translateBatchFunc as kotlin.reflect.KSuspendFunction4<Any, List<String>, String, String, Map<String, String>>)
-                        .invoke(translationManager, texts, source, target)
-                } catch (e: Exception) {
-                    Log.e(TAG, "getBatchTranslator: call failed", e)
-                    emptyMap()
-                }
-            }
-            batchTranslator
-        } catch (e: Exception) {
-            Log.e(TAG, "getBatchTranslator: error (${translationManager.javaClass.simpleName})", e)
-            null
+        val currentState = translatorState ?: return null
+        val source = currentState.source
+        val target = currentState.target
+
+        return { texts ->
+            translationManager.translateBatch(texts, source, target) ?: emptyMap()
         }
     }
 

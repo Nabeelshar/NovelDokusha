@@ -14,6 +14,7 @@ class WuxiaWorld(
     override val catalogUrl = "https://wuxiaworld.site/novel/?m_orderby=trending"
     override val iconUrl = "https://wuxiaworld.site/wp-content/uploads/2019/04/favicon-1.ico"
     override val language = LanguageCode.ENGLISH
-    
+
     override val catalogOrderBy = "alphabet"
+    override val selectCatalogItemTitle: String = ".post-title h3 a"
 }

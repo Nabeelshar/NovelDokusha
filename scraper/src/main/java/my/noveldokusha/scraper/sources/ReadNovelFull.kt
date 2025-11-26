@@ -22,11 +22,16 @@ class ReadNovelFull(
     override val language = LanguageCode.ENGLISH
 
     // ReadNovelFull-specific catalog structure
-    override val selectCatalogItems = ".list-novel .row > div"
+    override val selectCatalogItems = ".list-novel .row"
     override val selectCatalogItemTitle = ".novel-title a"
-    override val selectCatalogItemCover = ".cover img"
+    override val selectCatalogItemCover = "div.col-xs-3 > div > img"
+
+    override val selectSearchItems: String = "#list-page div.list-novel .row"
+    override val selectSearchItemTitle: String = ".novel-title a"
+    override val selectSearchItemUrl: String = "a[href]"
+    override val selectSearchItemCover: String = "div.col-xs-3 > div > img"
     override val selectPaginationLastPage = "ul.pagination li:last-child"
-    
+
     // Specific ajax settings
     override val novelIdSelector = "#rating[data-novel-id]"
     override val ajaxChapterPath = "ajax/chapter-archive"

@@ -49,7 +49,7 @@ class NovelBin(private val networkClient: NetworkClient) : SourceInterface.Catal
                 networkClient.get(url).toDocument().run {
                     val isLastPage = select("ul.pagination li.next.disabled").isNotEmpty()
                     val bookResults =
-                        select("#list-page .list-novel .row > div").mapNotNull {
+                        select("#list-page div.list-novel .row").mapNotNull {
                             val link = it.selectFirst(".novel-title a") ?: return@mapNotNull null
                             val elements = it.select("img")
                             val value = getAttributePriority(elements, "src", "data-src").toString()

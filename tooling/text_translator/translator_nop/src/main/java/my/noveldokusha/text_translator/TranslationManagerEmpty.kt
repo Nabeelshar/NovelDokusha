@@ -21,4 +21,12 @@ class TranslationManagerEmpty : TranslationManager {
 
     override fun downloadModel(language: String) = Unit
     override fun removeModel(language: String) = Unit
+
+    override suspend fun translateBatch(
+        texts: List<String>,
+        sourceLanguage: String,
+        targetLanguage: String
+    ): Map<String, String>? {
+        return null
+    }
 }
